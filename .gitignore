@@ -2,3 +2,6 @@
 .idea/
 build/
 .env
+data/logs/
+data/nats/
+*.pid

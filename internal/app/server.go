@@ -1,0 +1,108 @@
+// Package app 组装进程生命周期：数据库、NATS、HTTP、信号。
+package app
+
+import (
+	"context"
+	"database/sql"
+	"fmt"
+	"log/slog"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"github.com/runforyou-ai/lite-ai-gateway/internal/api"
+	"github.com/runforyou-ai/lite-ai-gateway/internal/config"
+	"github.com/runforyou-ai/lite-ai-gateway/internal/direct"
+	"github.com/runforyou-ai/lite-ai-gateway/internal/logging"
+	"github.com/runforyou-ai/lite-ai-gateway/internal/migrate"
+	natspkg "github.com/runforyou-ai/lite-ai-gateway/internal/nats"
+	"github.com/runforyou-ai/lite-ai-gateway/internal/process"
+	"github.com/uptrace/bun"
+	"github.com/uptrace/bun/dialect/pgdialect"
+	"github.com/uptrace/bun/driver/pgdriver"
+)
+
+// Run 加载配置、迁移、启动服务并阻塞至停止信号。
+func Run(cfgPath, pidPath string) error {
+	cfg, err := config.Load(cfgPath)
+	if err != nil {
+		return err
+	}
+	closeLog, err := logging.Setup(logging.Options{Dir: cfg.LogDir()})
+	if err != nil {
+		return err
+	}
+	defer func() { _ = closeLog() }()
+
+	if err := process.WritePID(pidPath); err != nil {
+		return fmt.Errorf("write pid: %w", err)
+	}
+	defer func() { _ = process.RemovePID(pidPath) }()
+
+	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(cfg.PostgresDSN())))
+	sqldb.SetMaxOpenConns(10)
+	sqldb.SetMaxIdleConns(5)
+	sqldb.SetConnMaxLifetime(time.Hour)
+	if err := sqldb.Ping(); err != nil {
+		return fmt.Errorf("ping postgres: %w", err)
+	}
+	defer sqldb.Close()
+
+	ctx := context.Background()
+	if err := migrate.Up(ctx, sqldb); err != nil {
+		return err
+	}
+	db := bun.NewDB(sqldb, pgdialect.New())
+
+	natsConn, err := natspkg.Connect(cfg.NATS.URL)
+	if err != nil {
+		return err
+	}
+	defer natsConn.Close()
+
+	backend := direct.NewBackend(db)
+	handler := api.NewMux(backend)
+	server := &http.Server{
+		Addr:              cfg.Addr(),
+		Handler:           handler,
+		ReadHeaderTimeout: 10 * time.Second,
+	}
+
+	errCh := make(chan error, 1)
+	go func() {
+		slog.Info("http server listening", "addr", cfg.Addr(), "env", cfg.Env)
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			errCh <- err
+		}
+	}()
+
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+	defer signal.Stop(sigCh)
+
+	for {
+		select {
+		case err := <-errCh:
+			return err
+		case sig := <-sigCh:
+			switch sig {
+			case syscall.SIGHUP:
+				slog.Info("reload signal received")
+				newCfg, err := config.Load(cfgPath)
+				if err != nil {
+					slog.Error("reload config failed", "err", err)
+					continue
+				}
+				cfg = newCfg
+				slog.Info("config reloaded", "env", cfg.Env, "log_dir", cfg.LogDir())
+			default:
+				slog.Info("shutdown signal received", "signal", sig.String())
+				shutdownCtx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+				defer cancel()
+				return server.Shutdown(shutdownCtx)
+			}
+		}
+	}
+}

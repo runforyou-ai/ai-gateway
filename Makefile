@@ -1,15 +1,20 @@
-.PHONY: serve
+.PHONY: generate serve build-linux-amd64 build-linux-arm64 tidy
+
+generate:
+	go generate ./internal/contract
+
 serve:
-	go run main.go serve
+	go run . serve
 
-.PHONY: build-linux-amd64
-build-linux-amd64:
+tidy:
+	go mod tidy
+
+build-linux-amd64: generate
 	go version
 	go mod tidy
-	GOARCH=amd64 GOOS=linux go build -o build/lite-ai-gateway-linux-amd64 -ldflags "-s -w" main.go
+	GOARCH=amd64 GOOS=linux go build -o build/lite-ai-gateway-linux-amd64 -ldflags "-s -w" .
 
-.PHONY: build-linux-arm64
-build-linux-arm64:
+build-linux-arm64: generate
 	go version
 	go mod tidy
-	GOARCH=arm64 GOOS=linux go build -o build/lite-ai-gateway-linux-arm64 -ldflags "-s -w" main.go
+	GOARCH=arm64 GOOS=linux go build -o build/lite-ai-gateway-linux-arm64 -ldflags "-s -w" .
