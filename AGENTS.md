@@ -26,6 +26,7 @@
 Make：`make dev`（前后端）；`make build`（当前系统二进制）；`make build amd64|arm64`（Linux 交叉编译）。
 Docker（生产单机）：先 `make build amd64|arm64`（与宿主机 Docker 架构一致），再 `docker compose up --build`；仅 Postgres + app，NATS 内嵌；镜像 COPY 对应 Linux 二进制；挂载仓库根目录 `config.yaml`、日志与 JetStream 数据目录。
 CI：GitHub Actions（PR / `main`）跑契约生成校验、`go vet`/`test`、前端构建，以及 compose 冒烟（`/health`）；`main` 用 buildx 推送 `linux/amd64`+`linux/arm64` 多架构镜像到 `ghcr.io/runforyou-ai/lite-ai-gateway`（`latest` 与 commit SHA）。
+CD：推送 tag `v*` 触发 release 工作流，发布 GitHub Release，并推送镜像 tag（`vX.Y.Z`、`X.Y.Z`、`latest`）。
 
 ## 配置与进程
 
