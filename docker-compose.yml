@@ -20,9 +20,15 @@ services:
     ports:
       - "127.0.0.1:${SERVER_PORT:-3000}:3000"
     volumes:
-      - ./docker/config.yaml:/etc/lite-ai-gateway/config.yaml:ro
+      - ./config.yaml:/etc/lite-ai-gateway/config.yaml:ro
       - ${LOG_DIR:-./data/logs}:/var/log/lite-ai-gateway
       - ${NATS_DATA_DIR:-./data/nats}:/data/nats
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:3000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
     depends_on:
       postgres:
         condition: service_healthy

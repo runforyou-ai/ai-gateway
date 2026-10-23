@@ -29,15 +29,42 @@ func decodeJSONBody(r *http.Request, dst any) error {
 
 var errBadRequest = errors.New("bad request")
 
+// APIError 是 /api 可映射为 HTTP 状态与 message/fields 的错误。
+type APIError struct {
+	Status  int
+	Message string
+	Fields  map[string]string
+}
+
+func (e *APIError) Error() string {
+	if e == nil {
+		return ""
+	}
+	return e.Message
+}
+
 type errorBody struct {
-	Error string `json:"error"`
+	Message string            `json:"message"`
+	Fields  map[string]string `json:"fields,omitempty"`
+}
+
+func writeAPIError(w http.ResponseWriter, status int, message string, fields map[string]string) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	_ = json.NewEncoder(w).Encode(errorBody{Message: message, Fields: fields})
 }
 
 func writeJSON(w http.ResponseWriter, status int, body any, err error) {
 	if err != nil {
 		code := http.StatusInternalServerError
 		msg := "internal error"
+		var fields map[string]string
+		var apiErr *APIError
 		switch {
+		case errors.As(err, &apiErr):
+			code = apiErr.Status
+			msg = apiErr.Message
+			fields = apiErr.Fields
 		case errors.Is(err, direct.ErrUnauthorized):
 			code = http.StatusUnauthorized
 			msg = "unauthorized"
@@ -50,9 +77,7 @@ func writeJSON(w http.ResponseWriter, status int, body any, err error) {
 		default:
 			slog.Error("api request failed", "err", err)
 		}
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(code)
-		_ = json.NewEncoder(w).Encode(errorBody{Error: msg})
+		writeAPIError(w, code, msg, fields)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")

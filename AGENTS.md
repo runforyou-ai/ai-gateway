@@ -24,7 +24,7 @@
 | 辅助 | `github.com/runforyou-ai/support` |
 
 Make：`make dev`（前后端）；`make build`（当前系统二进制）；`make build amd64|arm64`（Linux 交叉编译）。
-Docker（生产单机）：先 `make build amd64|arm64`，再 `docker compose up --build`；仅 Postgres + app，NATS 内嵌（`nats.url` 空）；镜像只 COPY Linux 二进制；挂载 `docker/config.yaml`、`/var/log/lite-ai-gateway`（默认 `./data/logs`）、`/data/nats`（默认 `./data/nats`）。
+Docker（生产单机）：先 `make build amd64|arm64`（与宿主机 Docker 架构一致），再 `docker compose up --build`；仅 Postgres + app，NATS 内嵌；镜像 COPY 对应 Linux 二进制；挂载仓库根目录 `config.yaml`、日志与 JetStream 数据目录。
 
 ## 配置与进程
 

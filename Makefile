@@ -1,13 +1,16 @@
-.PHONY: dev build amd64 arm64
+.PHONY: dev build generate amd64 arm64
 
 dev:
 	go run . serve &
 	cd frontend && pnpm dev
 
+generate:
+	go generate ./internal/contract
+
 build:
 	@arch="$(filter amd64 arm64,$(MAKECMDGOALS))"; \
 	set -e; \
-	go generate ./internal/contract; \
+	$(MAKE) generate; \
 	go mod tidy; \
 	( cd frontend && pnpm build ); \
 	rm -rf internal/web/dist; \

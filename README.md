@@ -94,7 +94,7 @@ AI Gateway 是一个以模型为中心的统一 AI API 网关，支持多类型 
 | 配置 | yaml 仅启动/基础设施；系统级 `settings` / `state` 存库（按名 JSON 文档组） |
 | 配置文件 | `init` 生成 yaml（有 `.env` 则覆盖默认值）；`serve` 只读 yaml |
 | Make | `make dev` 同时起前后端；`make build` 打当前系统包；`make build amd64\|arm64` 打 Linux 包 |
-| Docker | 生产单机：先 `make build amd64\|arm64`，再 `docker compose up --build`（Postgres + app，NATS 内嵌；镜像只嵌入二进制） |
+| Docker | 生产单机：`make build amd64\|arm64` 后 `docker compose up --build`（挂载根目录 `config.yaml`；镜像嵌入对应 Linux 二进制） |
 | 进程 | `serve` / `stop` / `restart` / `reload`；pid 默认与配置同目录 |
 | 日志 | `slog`；控制台按行输出；文件轮转：开发 `./data/logs/`，生产 `/var/log/lite-ai-gateway/`（yaml 可覆盖） |
 | API | `/v1/*` 对外 AI（手写）；`/api/*` 管理台（契约生成） |

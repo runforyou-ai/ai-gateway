@@ -11,7 +11,15 @@ import (
 // NewMux 组装 /api、/v1 与嵌入前端。
 func NewMux(backend *direct.Backend) http.Handler {
 	mux := http.NewServeMux()
+	mux.HandleFunc("GET /health", func(w http.ResponseWriter, _ *http.Request) {
+		writeJSON(w, http.StatusOK, map[string]bool{"ok": true}, nil)
+	})
 	registerGeneratedRoutes(mux, backend)
+	apiNotFound := func(w http.ResponseWriter, _ *http.Request) {
+		writeAPIError(w, http.StatusNotFound, "not found", nil)
+	}
+	mux.HandleFunc("/api", apiNotFound)
+	mux.HandleFunc("/api/", apiNotFound)
 	registerV1Routes(mux)
 	mux.Handle("/", spaHandler())
 	return mux
