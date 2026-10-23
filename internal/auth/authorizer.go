@@ -44,7 +44,12 @@ func (a *SessionAuthorizer) Authenticate(ctx context.Context, cookieHeader strin
 		return Principal{}, errors.New("invalid role")
 	}
 
-	newExp := time.Now().Add(SessionTTL)
+	// 剩余有效期较长时按「记住我」续期，否则按短会话续期。
+	ttl := SessionTTL
+	if sess.ExpiresAt.Sub(time.Now()) > SessionTTL {
+		ttl = SessionTTLRemember
+	}
+	newExp := time.Now().Add(ttl)
 	_, _ = a.DB.NewUpdate().Model(&sess).
 		Set("expires_at = ?", newExp).
 		WherePK().

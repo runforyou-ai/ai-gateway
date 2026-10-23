@@ -12,9 +12,9 @@ type Setting struct {
 	bun.BaseModel `bun:"table:settings,alias:setg"`
 
 	Name      string          `bun:"name,pk"`
+	CreatedAt time.Time       `bun:"created_at,nullzero,default:now()"`
+	UpdatedAt time.Time       `bun:"updated_at,nullzero,default:now()"`
 	Payload   json.RawMessage `bun:"payload,type:jsonb"`
 	Blob      []byte          `bun:"blob"`
 	Version   int64           `bun:"version"`
-	CreatedAt time.Time       `bun:"created_at,nullzero,default:now()"`
-	UpdatedAt time.Time       `bun:"updated_at,nullzero,default:now()"`
 }

@@ -20,7 +20,9 @@ export function Breadcrumb() {
   const Link = useLink();
   const { breadcrumbs } = useBreadcrumb();
   const { resources } = useResourceParams();
-  const rootRouteResource = matchResourceFromRoute("/", resources);
+  // 管理台挂在 /console，不能用模板默认的 "/"（会落到公开欢迎页）
+  const rootRouteResource = matchResourceFromRoute("/console", resources);
+  const homePath = rootRouteResource.matchedRoute ?? "/console";
 
   const breadCrumbItems = useMemo(() => {
     const list: {
@@ -31,12 +33,10 @@ export function Breadcrumb() {
 
     list.push({
       key: "breadcrumb-item-home",
-      href: rootRouteResource.matchedRoute ?? "/",
+      href: homePath,
       Component: (
-        <Link to={rootRouteResource.matchedRoute ?? "/"}>
-          {rootRouteResource?.resource?.meta?.icon ?? (
-            <Home className="h-4 w-4" />
-          )}
+        <Link to={homePath}>
+          <Home className="h-4 w-4" />
         </Link>
       ),
     });
@@ -50,7 +50,7 @@ export function Breadcrumb() {
     }
 
     return list;
-  }, [breadcrumbs, Link, rootRouteResource]);
+  }, [breadcrumbs, Link, homePath]);
 
   return (
     <ShadcnBreadcrumb>

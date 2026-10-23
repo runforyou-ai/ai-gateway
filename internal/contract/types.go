@@ -13,6 +13,7 @@ type InstallationStatus struct {
 
 // RegisterInput 是注册请求。
 type RegisterInput struct {
+	Name     string `json:"name"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
@@ -20,14 +21,4 @@ type RegisterInput struct {
 // RegisterResult 是注册响应。
 type RegisterResult struct {
 	Role string `json:"role"`
-}
-
-// EchoInput 是回显请求。
-type EchoInput struct {
-	Text string `json:"text"`
-}
-
-// EchoResult 是回显响应。
-type EchoResult struct {
-	Message string `json:"message"`
 }

@@ -1,19 +1,30 @@
+import type { ReactNode } from "react";
 import {
-  useRefineOptions,
-  useActiveAuthProvider,
+  useGetLocale,
+  useLink,
   useLogout,
+  useRefineOptions,
+  useSetLocale,
+  useTranslation,
 } from "@refinedev/core";
+import { UserAvatar } from "@/components/refine-ui/layout/user-avatar";
+import { useTheme } from "@/components/refine-ui/theme/theme-provider";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
-  DropdownMenuItem,
   DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ThemeToggle } from "@/components/refine-ui/theme/theme-toggle";
-import { UserAvatar } from "@/components/refine-ui/layout/user-avatar";
 import { useSidebar, SidebarTrigger } from "@/components/ui/sidebar";
-import { LogOutIcon } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { Check, CircleUser, Languages, LogOut, Monitor, Moon, Sun } from "lucide-react";
 
 export const Header = () => {
   const { isMobile } = useSidebar();
@@ -41,13 +52,12 @@ function DesktopHeader() {
         "z-40"
       )}
     >
-      {/* 收起后顶栏展开入口（官方模板收起后侧栏触发器不可点，属 bug 修复） */}
       {!open ? (
         <SidebarTrigger className={cn("text-muted-foreground")} />
       ) : null}
-      <div className={cn("ml-auto", "flex", "items-center", "gap-4")}>
-        <ThemeToggle />
-        <UserDropdown />
+      <div className={cn("ml-auto", "flex", "items-center", "gap-2")}>
+        <LanguageSwitcher />
+        <UserAccountMenu />
       </div>
     </header>
   );
@@ -119,43 +129,210 @@ function MobileHeader() {
         </h2>
       </div>
 
-      <ThemeToggle className={cn("h-8", "w-8")} />
+      <div className={cn("flex", "items-center", "gap-1")}>
+        <LanguageSwitcher triggerClassName={cn("h-8", "w-8")} />
+        <UserAccountMenu triggerClassName={cn("h-8", "w-8")} />
+      </div>
     </header>
   );
 }
 
-const UserDropdown = () => {
-  const { mutate: logout, isPending: isLoggingOut } = useLogout();
+type HeaderIconButtonProps = {
+  triggerClassName?: string;
+};
 
-  const authProvider = useActiveAuthProvider();
-
-  if (!authProvider?.getIdentity) {
-    return null;
-  }
+function LanguageSwitcher({ triggerClassName }: HeaderIconButtonProps) {
+  const { translate } = useTranslation();
+  const getLocale = useGetLocale();
+  const setLocale = useSetLocale();
+  const current = (getLocale() ?? "en").toLowerCase().startsWith("zh")
+    ? "zh"
+    : "en";
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger>
-        <UserAvatar />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem
-          onClick={() => {
-            logout();
-          }}
+    <DropdownMenu modal={false}>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={translate("language.switch")}
+          className={cn(
+            "cursor-pointer",
+            "select-none",
+            "rounded-full",
+            "text-muted-foreground",
+            "hover:bg-transparent",
+            "hover:text-foreground",
+            "dark:hover:bg-transparent",
+            "focus-visible:ring-0",
+            "focus-visible:border-transparent",
+            "data-[state=open]:bg-transparent",
+            "data-[state=open]:cursor-pointer",
+            triggerClassName
+          )}
         >
-          <LogOutIcon
-            className={cn("text-destructive", "hover:text-destructive")}
-          />
-          <span className={cn("text-destructive", "hover:text-destructive")}>
-            {isLoggingOut ? "Logging out..." : "Logout"}
-          </span>
+          <Languages className={cn("h-[1.2rem]", "w-[1.2rem]")} />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className={cn("min-w-36", "rounded-lg")}>
+        <DropdownMenuItem
+          className={cn("cursor-pointer", "justify-between")}
+          onClick={() => setLocale("zh")}
+        >
+          {translate("language.zh")}
+          {current === "zh" ? <Check className={cn("h-4", "w-4")} /> : null}
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className={cn("cursor-pointer", "justify-between")}
+          onClick={() => setLocale("en")}
+        >
+          {translate("language.en")}
+          {current === "en" ? <Check className={cn("h-4", "w-4")} /> : null}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
+}
+
+function UserAccountMenu({ triggerClassName }: HeaderIconButtonProps) {
+  const { theme, setTheme } = useTheme();
+  const { mutate: logout, isPending: isLoggingOut } = useLogout();
+  const { translate } = useTranslation();
+  const Link = useLink();
+
+  return (
+    <DropdownMenu modal={false}>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn(
+            "cursor-pointer",
+            "select-none",
+            "rounded-full",
+            "p-0",
+            "hover:bg-transparent",
+            "dark:hover:bg-transparent",
+            "focus-visible:ring-0",
+            "focus-visible:border-transparent",
+            "data-[state=open]:bg-transparent",
+            "data-[state=open]:cursor-pointer",
+            triggerClassName
+          )}
+        >
+          <UserAvatar />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className={cn("w-48", "rounded-lg", "p-1")}>
+        <DropdownMenuItem asChild>
+          <Link to="/console/profile" className={cn("cursor-pointer")}>
+            <CircleUser />
+            {translate("account.profile")}
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <div className={cn("flex", "items-center", "justify-between", "gap-1", "px-1", "py-1.5")}>
+          <ThemeIconButton
+            active={theme === "light"}
+            label={translate("theme.switchToLight")}
+            onClick={() => setTheme("light")}
+          >
+            <Sun className={cn("h-4", "w-4")} />
+          </ThemeIconButton>
+          <ThemeIconButton
+            active={theme === "dark"}
+            label={translate("theme.switchToDark")}
+            onClick={() => setTheme("dark")}
+          >
+            <Moon className={cn("h-4", "w-4")} />
+          </ThemeIconButton>
+          <ThemeIconButton
+            active={theme === "system"}
+            label={translate("theme.switchToSystem")}
+            onClick={() => setTheme("system")}
+          >
+            <Monitor className={cn("h-4", "w-4")} />
+          </ThemeIconButton>
+        </div>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          disabled={isLoggingOut}
+          onClick={() => logout()}
+        >
+          <LogOut />
+          {isLoggingOut
+            ? translate("buttons.loggingOut")
+            : translate("buttons.logout")}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+type ThemeIconButtonProps = {
+  active: boolean;
+  label: string;
+  onClick: () => void;
+  children: ReactNode;
 };
+
+function ThemeIconButton({
+  active,
+  label,
+  onClick,
+  children,
+}: ThemeIconButtonProps) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          type="button"
+          aria-label={label}
+          aria-pressed={active}
+          onClick={onClick}
+          onPointerDown={(event) => event.preventDefault()}
+          className={cn(
+            "inline-flex",
+            "h-8",
+            "min-w-11",
+            "flex-1",
+            "items-center",
+            "justify-center",
+            "rounded-md",
+            "px-3",
+            "text-muted-foreground",
+            "transition-colors",
+            "hover:bg-muted",
+            "hover:text-foreground",
+            {
+              "bg-muted text-foreground": active,
+            }
+          )}
+        >
+          {children}
+        </button>
+      </TooltipTrigger>
+      <TooltipContent
+        side="top"
+        sideOffset={8}
+        className={cn(
+          "z-[60]",
+          "border",
+          "border-border",
+          "bg-popover",
+          "text-popover-foreground",
+          "shadow-md",
+          "[&_svg]:bg-popover",
+          "[&_svg]:fill-popover"
+        )}
+      >
+        {label}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
 
 Header.displayName = "Header";
 MobileHeader.displayName = "MobileHeader";
 DesktopHeader.displayName = "DesktopHeader";
+UserAccountMenu.displayName = "UserAccountMenu";

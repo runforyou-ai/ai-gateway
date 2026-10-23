@@ -1,14 +1,14 @@
-import { Authenticated, Refine } from "@refinedev/core";
+import { Authenticated, Refine, type I18nProvider } from "@refinedev/core";
 import { DevtoolsPanel, DevtoolsProvider } from "@refinedev/devtools";
 import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
 import {
   Boxes,
   KeyRound,
   LayoutDashboard,
-  Radio,
   Server,
   Settings,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import {
   BrowserRouter,
@@ -30,13 +30,27 @@ import { ThemeProvider } from "./components/refine-ui/theme/theme-provider";
 import { Layout } from "./components/refine-ui/layout/layout";
 import { ErrorComponent } from "./components/refine-ui/layout/error-component";
 import { DashboardPage } from "./pages/dashboard";
-import { EchoPage } from "./pages/echo";
 import { PlaceholderListPage } from "./pages/placeholder-list";
+import { ProfilePage } from "./pages/profile";
+import { SettingsPage } from "./pages/settings";
 import { SignInPage } from "./pages/sign-in";
 import { SignUpPage } from "./pages/sign-up";
+import { WelcomePage } from "./pages/welcome";
+import "./i18n";
 import "./App.css";
 
+const CONSOLE_PREFIX = "/console";
+
 function App() {
+  const { t, i18n } = useTranslation();
+
+  const i18nProvider: I18nProvider = {
+    translate: (key: string, options?: Record<string, unknown>) =>
+      String(t(key, options)),
+    changeLocale: (lang: string) => i18n.changeLanguage(lang),
+    getLocale: () => i18n.language,
+  };
+
   return (
     <BrowserRouter>
       <RefineKbarProvider>
@@ -45,55 +59,56 @@ function App() {
             <Refine
               dataProvider={dataProvider}
               authProvider={authProvider}
+              i18nProvider={i18nProvider}
               notificationProvider={useNotificationProvider()}
               routerProvider={routerProvider}
               resources={[
                 {
                   name: "dashboard",
-                  list: "/",
+                  list: CONSOLE_PREFIX,
                   meta: {
-                    label: "概览",
+                    label: t("resources.dashboard"),
                     icon: <LayoutDashboard className="h-4 w-4" />,
                   },
                 },
                 {
                   name: "models",
-                  list: "/models",
+                  list: `${CONSOLE_PREFIX}/models`,
                   meta: {
-                    label: "模型",
+                    label: t("resources.models"),
                     icon: <Boxes className="h-4 w-4" />,
                   },
                 },
                 {
                   name: "providers",
-                  list: "/providers",
+                  list: `${CONSOLE_PREFIX}/providers`,
                   meta: {
-                    label: "上游凭据",
+                    label: t("resources.providers"),
                     icon: <Server className="h-4 w-4" />,
                   },
                 },
                 {
                   name: "api-keys",
-                  list: "/api-keys",
+                  list: `${CONSOLE_PREFIX}/api-keys`,
                   meta: {
-                    label: "API Key",
+                    label: t("resources.api-keys"),
                     icon: <KeyRound className="h-4 w-4" />,
                   },
                 },
                 {
                   name: "settings",
-                  list: "/settings",
+                  list: `${CONSOLE_PREFIX}/settings`,
                   meta: {
-                    label: "设置",
+                    label: t("resources.settings"),
                     icon: <Settings className="h-4 w-4" />,
                   },
                 },
                 {
-                  name: "echo",
-                  list: "/echo",
+                  name: "profile",
+                  list: `${CONSOLE_PREFIX}/profile`,
                   meta: {
-                    label: "Echo",
-                    icon: <Radio className="h-4 w-4" />,
+                    label: t("profile.title"),
+                    hide: true,
                   },
                 },
               ]}
@@ -107,9 +122,11 @@ function App() {
               }}
             >
               <Routes>
+                <Route index element={<WelcomePage />} />
                 <Route path="/login" element={<SignInPage />} />
                 <Route path="/register" element={<SignUpPage />} />
                 <Route
+                  path={CONSOLE_PREFIX}
                   element={
                     <Authenticated
                       key="authenticated"
@@ -122,31 +139,11 @@ function App() {
                   }
                 >
                   <Route index element={<DashboardPage />} />
-                  <Route
-                    path="/models"
-                    element={
-                      <PlaceholderListPage description="模型映射 CRUD 待接入。" />
-                    }
-                  />
-                  <Route
-                    path="/providers"
-                    element={
-                      <PlaceholderListPage description="上游供应商凭据 CRUD 待接入。" />
-                    }
-                  />
-                  <Route
-                    path="/api-keys"
-                    element={
-                      <PlaceholderListPage description="对外 API Key 管理待接入。" />
-                    }
-                  />
-                  <Route
-                    path="/settings"
-                    element={
-                      <PlaceholderListPage description="站点设置（如开放注册）待接入。" />
-                    }
-                  />
-                  <Route path="/echo" element={<EchoPage />} />
+                  <Route path="models" element={<PlaceholderListPage />} />
+                  <Route path="providers" element={<PlaceholderListPage />} />
+                  <Route path="api-keys" element={<PlaceholderListPage />} />
+                  <Route path="settings" element={<SettingsPage />} />
+                  <Route path="profile" element={<ProfilePage />} />
                   <Route path="*" element={<ErrorComponent />} />
                 </Route>
                 <Route path="*" element={<Navigate to="/" replace />} />

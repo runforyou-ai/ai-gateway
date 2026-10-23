@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 
 type User = {
   id: number;
+  name: string;
   firstName: string;
   lastName: string;
   fullName: string;
@@ -27,7 +28,8 @@ export function UserInfo() {
     );
   }
 
-  const { firstName, lastName, email } = user;
+  const { name, fullName, email } = user;
+  const displayName = name || fullName;
 
   return (
     <div className={cn("flex", "items-center", "gap-x-2")}>
@@ -42,7 +44,7 @@ export function UserInfo() {
         )}
       >
         <span className={cn("text-sm", "font-medium", "text-muted-foreground")}>
-          {firstName} {lastName}
+          {displayName}
         </span>
         <span className={cn("text-xs", "text-muted-foreground")}>{email}</span>
       </div>
