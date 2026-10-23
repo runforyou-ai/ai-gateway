@@ -9,10 +9,12 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
 	"github.com/runforyou-ai/lite-ai-gateway/internal/api"
+	"github.com/runforyou-ai/lite-ai-gateway/internal/auth"
 	"github.com/runforyou-ai/lite-ai-gateway/internal/config"
 	"github.com/runforyou-ai/lite-ai-gateway/internal/direct"
 	"github.com/runforyou-ai/lite-ai-gateway/internal/logging"
@@ -23,6 +25,14 @@ import (
 	"github.com/uptrace/bun/dialect/pgdialect"
 	"github.com/uptrace/bun/driver/pgdriver"
 )
+
+type sessionAuthorizer struct {
+	inner *auth.SessionAuthorizer
+}
+
+func (a sessionAuthorizer) Authenticate(ctx context.Context, r direct.CookieRequest) (auth.Principal, error) {
+	return a.inner.Authenticate(ctx, r.CookieHeader)
+}
 
 // Run 加载配置、迁移、启动服务并阻塞至停止信号。
 func Run(cfgPath, pidPath string) error {
@@ -62,8 +72,13 @@ func Run(cfgPath, pidPath string) error {
 	}
 	defer natsConn.Close()
 
+	sessionAuth := &auth.SessionAuthorizer{DB: db}
+	direct.SetAuthorizer(sessionAuthorizer{inner: sessionAuth})
 	backend := direct.NewBackend(db)
-	handler := api.NewMux(backend)
+	handler := api.NewMux(backend, api.MuxOptions{
+		DB:           db,
+		CookieSecure: strings.HasPrefix(cfg.Server.PublicURL, "https://"),
+	})
 	server := &http.Server{
 		Addr:              cfg.Addr(),
 		Handler:           handler,

@@ -90,14 +90,16 @@ internal/config/  internal/nats/
 - 不强制全局 `repo` 层；查询重再在对应 action 包内拆文件。
 - 公共纯函数优先 support 或小包，避免「utils 垃圾场」。
 
-### 认证
+### 认证与注册
 
+- **无单独安装向导**。通用 `POST /api/register`：系统中第一个注册用户自动为 `admin`，之后注册为 `user`（需 `settings.site.registrationOpen`；无人时始终允许注册）。
 - **管理台 `/api`**：浏览器 Cookie 会话（`HttpOnly`；生产加 `Secure`；`SameSite=Lax` 或按部署调整）。Cookie 存不透明会话令牌，服务端 `sessions` 表为权威（可吊销、滑动过期、多设备）。
 - **不使用 JWT** 做管理台登录态。
 - 登录：校验账号后插入 `sessions`（存令牌哈希、`user_id`、`expires_at` 等），Set-Cookie；登出：删会话行并清 Cookie。
 - 鉴权：读 Cookie → 查 `sessions`（有效且未过期）→ 加载 `users`；`user`/`admin` 按 `role` 判断。活跃请求可滑动延长 `expires_at`。
 - **对外 `/v1`**：使用 API Key（或其它机器凭证），不用浏览器 Cookie；与管理台会话分离。
 - 同域嵌入前端优先，避免跨域 Cookie/CSRF 复杂度；若将来跨域再单独补 CORS/CSRF。
+- `serve` / `reload` 只读 yaml；仅 `init` 可读当前目录 `.env`。
 
 ### 契约与生成
 

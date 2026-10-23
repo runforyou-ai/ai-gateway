@@ -93,6 +93,7 @@ AI Gateway 是一个以模型为中心的统一 AI API 网关，支持多类型 
 | 认证 | 管理台 Cookie + `sessions`；对外 `/v1` 用 API Key；角色仅 `admin` / `user` |
 | 配置 | yaml 仅启动/基础设施；系统级 `settings` / `state` 存库（按名 JSON 文档组） |
 | 配置文件 | `init` 生成 yaml（有 `.env` 则覆盖默认值）；`serve` 只读 yaml |
+| 注册 | `POST /api/register`；首个用户自动为 admin，其后需开放注册 |
 | Make | `make dev` 同时起前后端；`make build` 打当前系统包；`make build amd64\|arm64` 打 Linux 包 |
 | Docker | 生产单机：`make build amd64\|arm64` 后 `docker compose up --build`（挂载根目录 `config.yaml`；镜像嵌入对应 Linux 二进制） |
 | CI / CD | PR/`main` 校验与 compose 冒烟；`main` 推送 `latest`；打 tag `v*` 发布 Release 与版本镜像（amd64+arm64） |

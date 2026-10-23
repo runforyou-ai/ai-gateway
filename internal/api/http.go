@@ -29,20 +29,6 @@ func decodeJSONBody(r *http.Request, dst any) error {
 
 var errBadRequest = errors.New("bad request")
 
-// APIError 是 /api 可映射为 HTTP 状态与 message/fields 的错误。
-type APIError struct {
-	Status  int
-	Message string
-	Fields  map[string]string
-}
-
-func (e *APIError) Error() string {
-	if e == nil {
-		return ""
-	}
-	return e.Message
-}
-
 type errorBody struct {
 	Message string            `json:"message"`
 	Fields  map[string]string `json:"fields,omitempty"`
@@ -59,7 +45,7 @@ func writeJSON(w http.ResponseWriter, status int, body any, err error) {
 		code := http.StatusInternalServerError
 		msg := "internal error"
 		var fields map[string]string
-		var apiErr *APIError
+		var apiErr *direct.APIError
 		switch {
 		case errors.As(err, &apiErr):
 			code = apiErr.Status

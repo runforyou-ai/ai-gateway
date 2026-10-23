@@ -21,6 +21,16 @@ func registerGeneratedRoutes(mux *http.ServeMux, backend *direct.Backend) {
 		out, err := backend.InstallationStatus(r.Context(), meta)
 		writeJSON(w, 200, out, err)
 	})
+	mux.HandleFunc("POST /api/register", func(w http.ResponseWriter, r *http.Request) {
+		meta := requestMeta(r)
+		var input contract.RegisterInput
+		if err := decodeJSONBody(r, &input); err != nil {
+			writeJSON(w, http.StatusBadRequest, nil, err)
+			return
+		}
+		out, err := backend.Register(r.Context(), meta, input)
+		writeJSON(w, 201, out, err)
+	})
 	mux.HandleFunc("POST /api/echo", func(w http.ResponseWriter, r *http.Request) {
 		meta := requestMeta(r)
 		var input contract.EchoInput

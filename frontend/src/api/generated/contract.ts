@@ -17,3 +17,12 @@ export type InstallationStatus = {
   siteName: string
 }
 
+export type RegisterInput = {
+  email: string
+  password: string
+}
+
+export type RegisterResult = {
+  role: string
+}
+
