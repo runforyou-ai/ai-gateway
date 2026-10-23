@@ -1,40 +1,48 @@
-/*
-Copyright © 2026 NAME HERE <EMAIL ADDRESS>
-
-*/
 package cmd
 
 import (
 	"fmt"
+	"os"
 
+	"github.com/runforyou-ai/lite-ai-gateway/internal/app"
+	"github.com/runforyou-ai/lite-ai-gateway/internal/config"
 	"github.com/spf13/cobra"
 )
 
-// serveCmd represents the serve command
+var (
+	serveConfig string
+	servePID    string
+)
+
 var serveCmd = &cobra.Command{
 	Use:   "serve",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("serve called")
+	Short: "启动 HTTP 服务",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		cfgPath := serveConfig
+		if cfgPath == "" {
+			var err error
+			cfgPath, err = config.DefaultPath()
+			if err != nil {
+				return err
+			}
+		}
+		if _, err := os.Stat(cfgPath); err != nil {
+			return fmt.Errorf("config not found: %s", cfgPath)
+		}
+		pidPath := servePID
+		if pidPath == "" {
+			var err error
+			pidPath, err = config.DefaultPIDPath()
+			if err != nil {
+				return err
+			}
+		}
+		return app.Run(cfgPath, pidPath)
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(serveCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// serveCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// serveCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	serveCmd.Flags().StringVarP(&serveConfig, "file", "f", "", "配置文件路径（默认 XDG 用户路径）")
+	serveCmd.Flags().StringVar(&servePID, "pid", "", "pid 文件路径")
 }

@@ -1,17 +1,38 @@
 services:
-  #app:
-  #  image: ubuntu:latest
-
   postgres:
     image: postgres:18.6-trixie
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: lite-ai-gateway
+      POSTGRES_USER: lite-ai-gateway
+      POSTGRES_PASSWORD: lite-ai-gateway
     ports:
       - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 3s
+      timeout: 5s
+      retries: 10
+
+  app:
+    image: ghcr.io/runforyou-ai/lite-ai-gateway:latest
+    build: .
+    ports:
+      - "127.0.0.1:${SERVER_PORT:-3000}:3000"
+    volumes:
+      - ./config.yaml:/etc/lite-ai-gateway/config.yaml:ro
+      - ${LOG_DIR:-./data/logs}:/var/log/lite-ai-gateway
+      - ${NATS_DATA_DIR:-./data/nats}:/data/nats
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:3000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    depends_on:
+      postgres:
+        condition: service_healthy
 
 volumes:
   postgres_data:

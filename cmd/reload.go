@@ -1,40 +1,31 @@
-/*
-Copyright © 2026 NAME HERE <EMAIL ADDRESS>
-
-*/
 package cmd
 
 import (
 	"fmt"
 
+	"github.com/runforyou-ai/lite-ai-gateway/internal/process"
 	"github.com/spf13/cobra"
 )
 
-// reloadCmd represents the reload command
+var reloadPID string
+
 var reloadCmd = &cobra.Command{
 	Use:   "reload",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("reload called")
+	Short: "向服务进程发送 SIGHUP 以重载配置",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		path, err := pidFlagOrDefault(reloadPID)
+		if err != nil {
+			return err
+		}
+		if err := process.Reload(path); err != nil {
+			return err
+		}
+		fmt.Println("sent SIGHUP to", path)
+		return nil
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(reloadCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// reloadCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// reloadCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	reloadCmd.Flags().StringVar(&reloadPID, "pid", "", "pid 文件路径")
 }

@@ -1,0 +1,142 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  IMAGE: ghcr.io/runforyou-ai/lite-ai-gateway
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.27.1"
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Check generated contract artifacts
+        run: |
+          make generate
+          git diff --exit-code
+
+      - name: Go vet and test
+        run: |
+          go vet ./...
+          go test ./...
+
+      - name: Frontend build
+        working-directory: frontend
+        run: |
+          rm -f pnpm-workspace.yaml
+          pnpm install --frozen-lockfile
+          pnpm build
+
+  image:
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.27.1"
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - uses: docker/setup-qemu-action@v3
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: |
+          rm -f pnpm-workspace.yaml
+          pnpm install --frozen-lockfile
+
+      - name: Build Linux binaries (amd64 + arm64)
+        run: |
+          make build amd64
+          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -ldflags "-s -w" -o build/lite-ai-gateway-linux-arm64 .
+
+      - name: Compose up
+        env:
+          BUILDX_NO_DEFAULT_ATTESTATIONS: 1
+        run: docker compose up -d --build
+
+      - name: Wait for app healthy
+        run: |
+          cid="$(docker compose ps -q app)"
+          for i in $(seq 1 30); do
+            status="$(docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}starting{{end}}' "$cid")"
+            echo "attempt $i: health=$status"
+            if [ "$status" = "healthy" ]; then
+              exit 0
+            fi
+            if [ "$status" = "unhealthy" ]; then
+              break
+            fi
+            sleep 2
+          done
+          docker compose ps
+          docker compose logs app
+          exit 1
+
+      - name: Smoke health endpoints
+        run: |
+          curl -fsS http://127.0.0.1:3000/health
+          echo
+          curl -fsS http://127.0.0.1:3000/api/health
+          echo
+
+      - name: Login to GHCR
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push multi-arch image to GHCR
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            --provenance=false \
+            --sbom=false \
+            -t "${IMAGE}:latest" \
+            -t "${IMAGE}:${GITHUB_SHA}" \
+            --push \
+            .
+
+      - name: Compose down
+        if: always()
+        run: docker compose down -v
