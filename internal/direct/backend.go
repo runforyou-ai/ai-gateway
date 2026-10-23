@@ -2,8 +2,11 @@ package direct
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"net/http"
 
+	actionauth "github.com/runforyou-ai/lite-ai-gateway/internal/actions/auth"
 	"github.com/runforyou-ai/lite-ai-gateway/internal/actions/installation"
 	"github.com/runforyou-ai/lite-ai-gateway/internal/contract"
 	"github.com/uptrace/bun"
@@ -26,6 +29,40 @@ func (o *Ops) InstallationStatus(ctx context.Context, _ contract.RequestMeta) (c
 		return contract.InstallationStatus{}, err
 	}
 	return contract.InstallationStatus{Installed: installed, SiteName: siteName}, nil
+}
+
+// Register 注册账号。
+func (o *Ops) Register(ctx context.Context, _ contract.RequestMeta, input contract.RegisterInput) (contract.RegisterResult, error) {
+	out, err := actionauth.Register(ctx, o.DB, actionauth.RegisterInput{
+		Email:    input.Email,
+		Password: input.Password,
+	})
+	if err != nil {
+		switch {
+		case errors.Is(err, actionauth.ErrInvalidEmail):
+			return contract.RegisterResult{}, &APIError{
+				Status: http.StatusUnprocessableEntity, Message: "invalid email",
+				Fields: map[string]string{"email": "invalid"},
+			}
+		case errors.Is(err, actionauth.ErrWeakPassword):
+			return contract.RegisterResult{}, &APIError{
+				Status: http.StatusUnprocessableEntity, Message: "password too weak",
+				Fields: map[string]string{"password": "invalid"},
+			}
+		case errors.Is(err, actionauth.ErrEmailTaken):
+			return contract.RegisterResult{}, &APIError{
+				Status: http.StatusConflict, Message: "email already registered",
+				Fields: map[string]string{"email": "taken"},
+			}
+		case errors.Is(err, actionauth.ErrRegistrationClosed):
+			return contract.RegisterResult{}, &APIError{
+				Status: http.StatusForbidden, Message: "registration is closed",
+			}
+		default:
+			return contract.RegisterResult{}, err
+		}
+	}
+	return contract.RegisterResult{Role: string(out.Role)}, nil
 }
 
 // Echo 回显输入字符串。

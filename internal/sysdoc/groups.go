@@ -20,7 +20,7 @@ type Site struct {
 func DefaultSite() Site {
 	return Site{
 		Name:             "Lite AI Gateway",
-		RegistrationOpen: true,
+		RegistrationOpen: false,
 	}
 }
 

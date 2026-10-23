@@ -38,6 +38,11 @@ func SetAuthorizer(a Authorizer) {
 	authorizer = a
 }
 
+// GetAuthorizer 返回当前鉴权器。
+func GetAuthorizer() Authorizer {
+	return authorizer
+}
+
 func authorize(ctx context.Context, meta contract.RequestMeta, mode string) error {
 	switch mode {
 	case "public":

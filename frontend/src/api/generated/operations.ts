@@ -8,9 +8,14 @@ export function health(signal?: AbortSignal) {
   return call<contract.HealthStatus>({ method: "GET", path: "/api/health" }, signal)
 }
 
-/** 返回是否已安装及站点名。 */
+/** 返回是否已有账号及站点名。 */
 export function installationStatus(signal?: AbortSignal) {
   return call<contract.InstallationStatus>({ method: "GET", path: "/api/installation/status" }, signal)
+}
+
+/** 注册账号；第一个用户为 admin，其后为 user（需开放注册）。 */
+export function register(input: contract.RegisterInput, signal?: AbortSignal) {
+  return call<contract.RegisterResult>({ method: "POST", path: "/api/register", body: input }, signal)
 }
 
 /** 回显客户端输入的字符串。 */

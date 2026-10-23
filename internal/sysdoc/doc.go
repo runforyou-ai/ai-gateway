@@ -57,7 +57,7 @@ func PutSettings[T any](ctx context.Context, db bun.IDB, name string, value T, b
 		On("CONFLICT (name) DO UPDATE").
 		Set("payload = EXCLUDED.payload").
 		Set("blob = EXCLUDED.blob").
-		Set("version = settings.version + 1").
+		Set("version = setg.version + 1").
 		Exec(ctx)
 	if err != nil {
 		return fmt.Errorf("write settings %s: %w", name, err)
@@ -97,7 +97,7 @@ func PutState[T any](ctx context.Context, db bun.IDB, name string, value T) erro
 	}).
 		On("CONFLICT (name) DO UPDATE").
 		Set("payload = EXCLUDED.payload").
-		Set("version = state.version + 1").
+		Set("version = st.version + 1").
 		Exec(ctx)
 	if err != nil {
 		return fmt.Errorf("write state %s: %w", name, err)

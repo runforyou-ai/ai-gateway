@@ -27,6 +27,7 @@ export async function call<T>(opts: CallOptions, signal?: AbortSignal): Promise<
   const init: RequestInit = {
     method: opts.method,
     headers: { Accept: "application/json" },
+    credentials: "include",
     signal,
   }
   if (opts.body !== undefined) {

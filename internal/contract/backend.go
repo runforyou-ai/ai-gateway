@@ -16,9 +16,13 @@ type Backend interface {
 	//contract:route GET /health auth=public
 	Health(context.Context, RequestMeta) (HealthStatus, error)
 
-	// InstallationStatus 返回是否已安装及站点名。
+	// InstallationStatus 返回是否已有账号及站点名。
 	//contract:route GET /installation/status auth=public
 	InstallationStatus(context.Context, RequestMeta) (InstallationStatus, error)
+
+	// Register 注册账号；第一个用户为 admin，其后为 user（需开放注册）。
+	//contract:route POST /register status=201 auth=public
+	Register(context.Context, RequestMeta, RegisterInput) (RegisterResult, error)
 
 	// Echo 回显客户端输入的字符串。
 	//contract:route POST /echo auth=public

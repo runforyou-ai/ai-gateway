@@ -3,23 +3,29 @@ package api
 import (
 	"io/fs"
 	"net/http"
+	"strings"
 
 	"github.com/runforyou-ai/lite-ai-gateway/internal/direct"
 	"github.com/runforyou-ai/lite-ai-gateway/internal/web"
+	"github.com/uptrace/bun"
 )
 
+// MuxOptions 配置 HTTP 组装。
+type MuxOptions struct {
+	DB           *bun.DB
+	CookieSecure bool
+}
+
 // NewMux 组装 /api、/v1 与嵌入前端。
-func NewMux(backend *direct.Backend) http.Handler {
+func NewMux(backend *direct.Backend, opts MuxOptions) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, _ *http.Request) {
 		writeJSON(w, http.StatusOK, map[string]bool{"ok": true}, nil)
 	})
 	registerGeneratedRoutes(mux, backend)
-	apiNotFound := func(w http.ResponseWriter, _ *http.Request) {
-		writeAPIError(w, http.StatusNotFound, "not found", nil)
+	if opts.DB != nil {
+		registerSessionRoutes(mux, opts.DB, opts.CookieSecure)
 	}
-	mux.HandleFunc("/api", apiNotFound)
-	mux.HandleFunc("/api/", apiNotFound)
 	registerV1Routes(mux)
 	mux.Handle("/", spaHandler())
 	return mux
@@ -41,6 +47,10 @@ func spaHandler() http.Handler {
 	fileServer := http.FileServer(http.FS(dist))
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path
+		if strings.HasPrefix(path, "/api") || strings.HasPrefix(path, "/v1") {
+			writeAPIError(w, http.StatusNotFound, "not found", nil)
+			return
+		}
 		if path != "/" {
 			if f, err := dist.Open(path[1:]); err == nil {
 				_ = f.Close()

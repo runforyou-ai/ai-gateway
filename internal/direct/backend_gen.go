@@ -22,13 +22,22 @@ func (b *Backend) Health(ctx context.Context, meta contract.RequestMeta) (contra
 	return b.Impl.Health(ctx, meta)
 }
 
-// InstallationStatus 返回是否已安装及站点名。
+// InstallationStatus 返回是否已有账号及站点名。
 func (b *Backend) InstallationStatus(ctx context.Context, meta contract.RequestMeta) (contract.InstallationStatus, error) {
 	if err := authorize(ctx, meta, "public"); err != nil {
 		var zero contract.InstallationStatus
 		return zero, err
 	}
 	return b.Impl.InstallationStatus(ctx, meta)
+}
+
+// Register 注册账号；第一个用户为 admin，其后为 user（需开放注册）。
+func (b *Backend) Register(ctx context.Context, meta contract.RequestMeta, input contract.RegisterInput) (contract.RegisterResult, error) {
+	if err := authorize(ctx, meta, "public"); err != nil {
+		var zero contract.RegisterResult
+		return zero, err
+	}
+	return b.Impl.Register(ctx, meta, input)
 }
 
 // Echo 回显客户端输入的字符串。
