@@ -211,7 +211,7 @@ function SidebarItemLink({ item, selectedKey }: MenuItemProps) {
 
 function SidebarHeader() {
   const { title } = useRefineOptions();
-  const { open, isMobile } = useShadcnSidebar();
+  const { open } = useShadcnSidebar();
 
   return (
     <ShadcnSidebarHeader
@@ -260,14 +260,12 @@ function SidebarHeader() {
         </h2>
       </div>
 
-      <ShadcnSidebarTrigger
-        className={cn("text-muted-foreground", "mr-1.5", {
-          "opacity-0": !open,
-          "opacity-100": open || isMobile,
-          "pointer-events-auto": open || isMobile,
-          "pointer-events-none": !open && !isMobile,
-        })}
-      />
+      {/* 展开时在侧栏内收缩；收起后改由顶栏触发器展开，避免双按钮 */}
+      {open ? (
+        <ShadcnSidebarTrigger
+          className={cn("text-muted-foreground", "mr-1.5", "shrink-0")}
+        />
+      ) : null}
     </ShadcnSidebarHeader>
   );
 }

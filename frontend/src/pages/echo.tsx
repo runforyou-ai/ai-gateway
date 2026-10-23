@@ -31,8 +31,9 @@ export function EchoPage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-svh max-w-lg flex-col justify-center gap-4 p-8">
+    <div className="flex max-w-lg flex-col gap-4">
       <h1 className="text-xl font-medium">Echo</h1>
+      <p className="text-sm text-muted-foreground">联调占位：调用 POST /api/echo。</p>
       <Input
         value={text}
         onChange={(e) => setText(e.target.value)}

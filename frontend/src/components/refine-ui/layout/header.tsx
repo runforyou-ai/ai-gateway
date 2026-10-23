@@ -7,8 +7,8 @@ import {
   DropdownMenu,
   DropdownMenuItem,
   DropdownMenuContent,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ThemeToggle } from "@/components/refine-ui/theme/theme-toggle";
 import { UserAvatar } from "@/components/refine-ui/layout/user-avatar";
 import { useSidebar, SidebarTrigger } from "@/components/ui/sidebar";
@@ -22,6 +22,8 @@ export const Header = () => {
 };
 
 function DesktopHeader() {
+  const { open } = useSidebar();
+
   return (
     <header
       className={cn(
@@ -35,13 +37,18 @@ function DesktopHeader() {
         "border-b",
         "border-border",
         "bg-sidebar",
-        "pr-3",
-        "justify-end",
+        "px-3",
         "z-40"
       )}
     >
-      <ThemeToggle />
-      <UserDropdown />
+      {/* 收起后顶栏展开入口（官方模板收起后侧栏触发器不可点，属 bug 修复） */}
+      {!open ? (
+        <SidebarTrigger className={cn("text-muted-foreground")} />
+      ) : null}
+      <div className={cn("ml-auto", "flex", "items-center", "gap-4")}>
+        <ThemeToggle />
+        <UserDropdown />
+      </div>
     </header>
   );
 }
