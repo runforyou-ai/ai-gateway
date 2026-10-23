@@ -18,8 +18,3 @@ export function register(input: contract.RegisterInput, signal?: AbortSignal) {
   return call<contract.RegisterResult>({ method: "POST", path: "/api/register", body: input }, signal)
 }
 
-/** 回显客户端输入的字符串。 */
-export function echo(input: contract.EchoInput, signal?: AbortSignal) {
-  return call<contract.EchoResult>({ method: "POST", path: "/api/echo", body: input }, signal)
-}
-

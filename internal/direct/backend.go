@@ -3,7 +3,6 @@ package direct
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 
 	actionauth "github.com/runforyou-ai/lite-ai-gateway/internal/actions/auth"
@@ -34,11 +33,17 @@ func (o *Ops) InstallationStatus(ctx context.Context, _ contract.RequestMeta) (c
 // Register 注册账号。
 func (o *Ops) Register(ctx context.Context, _ contract.RequestMeta, input contract.RegisterInput) (contract.RegisterResult, error) {
 	out, err := actionauth.Register(ctx, o.DB, actionauth.RegisterInput{
+		Name:     input.Name,
 		Email:    input.Email,
 		Password: input.Password,
 	})
 	if err != nil {
 		switch {
+		case errors.Is(err, actionauth.ErrInvalidName):
+			return contract.RegisterResult{}, &APIError{
+				Status: http.StatusUnprocessableEntity, Message: "invalid name",
+				Fields: map[string]string{"name": "invalid"},
+			}
 		case errors.Is(err, actionauth.ErrInvalidEmail):
 			return contract.RegisterResult{}, &APIError{
 				Status: http.StatusUnprocessableEntity, Message: "invalid email",
@@ -63,13 +68,6 @@ func (o *Ops) Register(ctx context.Context, _ contract.RequestMeta, input contra
 		}
 	}
 	return contract.RegisterResult{Role: string(out.Role)}, nil
-}
-
-// Echo 回显输入字符串。
-func (o *Ops) Echo(_ context.Context, _ contract.RequestMeta, input contract.EchoInput) (contract.EchoResult, error) {
-	return contract.EchoResult{
-		Message: fmt.Sprintf("Received, you entered %s", input.Text),
-	}, nil
 }
 
 // NewBackend 组装生成分发层与手写实现。

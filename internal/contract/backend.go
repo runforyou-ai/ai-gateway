@@ -23,8 +23,4 @@ type Backend interface {
 	// Register 注册账号；第一个用户为 admin，其后为 user（需开放注册）。
 	//contract:route POST /register status=201 auth=public
 	Register(context.Context, RequestMeta, RegisterInput) (RegisterResult, error)
-
-	// Echo 回显客户端输入的字符串。
-	//contract:route POST /echo auth=public
-	Echo(context.Context, RequestMeta, EchoInput) (EchoResult, error)
 }

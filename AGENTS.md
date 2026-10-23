@@ -93,6 +93,11 @@ internal/config/  internal/nats/
 ### 认证与注册
 
 - **无单独安装向导**。通用 `POST /api/register`：系统中第一个注册用户自动为 `admin`，之后注册为 `user`（需 `settings.site.registrationOpen`；无人时始终允许注册）。
+- **本地/联调默认管理员**（Agent 或脚本自动创建账号时必须用这对凭据，勿另起邮箱、用户名或密码）：
+  - 用户名：`Admin`
+  - 邮箱：`admin@example.com`
+  - 密码：`12345678`
+- `users.name` 为展示用用户名（注册必填）；登录标识仍是 `email`。
 - **管理台 `/api`**：浏览器 Cookie 会话（`HttpOnly`；生产加 `Secure`；`SameSite=Lax` 或按部署调整）。Cookie 存不透明会话令牌，服务端 `sessions` 表为权威（可吊销、滑动过期、多设备）。
 - **不使用 JWT** 做管理台登录态。
 - 登录：校验账号后插入 `sessions`（存令牌哈希、`user_id`、`expires_at` 等），Set-Cookie；登出：删会话行并清 Cookie。
@@ -150,6 +155,7 @@ internal/config/  internal/nats/
 - `settings` / `state`：见上文文档组模型（`name` 主键，无自增 `id`）。
 - 一表一 model；字段与 bun tag 与迁移一致。
 - 首个注册用户：`role=admin`；之后默认 `user`。无自定义角色、不做复杂 RBAC。
+- `users`：`name`（展示名）、`email`（登录）、`password`、`role`。
 
 ## 前端
 
@@ -157,6 +163,7 @@ internal/config/  internal/nats/
 - 实时走 jetcast（浏览器直连 NATS WebSocket），不做 realtime 契约代码生成。
 - 样式用既有 shadcn + Tailwind；不引入第二套 UI 体系。
 - 构建产物嵌入 Go；本地 `refine dev` 可独立联调。
+- **优先用官方能力**：页面、布局、表单、表格、按钮等尽可能用 Refine / refine-ui / shadcn 自带组件与模板写法（含其默认间距与样式）；不要手写花哨布局或大量自定义 class 堆样式。确需定制时再局部覆盖，并保持简洁。表单参考 `frontend/src/pages/profile.tsx`。
 
 ## 文档与杂项
 

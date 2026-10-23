@@ -12,8 +12,10 @@ import (
 const (
 	// CookieName 是管理台会话 Cookie 名。
 	CookieName = "lag_session"
-	// SessionTTL 是会话有效期。
-	SessionTTL = 7 * 24 * time.Hour
+	// SessionTTL 是未勾选「记住我」时的服务端会话有效期。
+	SessionTTL = 24 * time.Hour
+	// SessionTTLRemember 是勾选「记住我」时的会话有效期。
+	SessionTTLRemember = 30 * 24 * time.Hour
 )
 
 // NewSessionToken 生成不透明会话令牌。
@@ -43,17 +45,28 @@ func TokenFromCookieHeader(cookieHeader string) string {
 	return strings.TrimSpace(c.Value)
 }
 
-// SessionCookie 构造会话 Cookie。
-func SessionCookie(token string, secure bool) *http.Cookie {
-	return &http.Cookie{
+// SessionTTLFor 按是否记住我返回会话有效期。
+func SessionTTLFor(remember bool) time.Duration {
+	if remember {
+		return SessionTTLRemember
+	}
+	return SessionTTL
+}
+
+// SessionCookie 构造会话 Cookie。remember=false 时为会话 Cookie（关闭浏览器即失效）。
+func SessionCookie(token string, secure, remember bool) *http.Cookie {
+	c := &http.Cookie{
 		Name:     CookieName,
 		Value:    token,
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   secure,
 		SameSite: http.SameSiteLaxMode,
-		MaxAge:   int(SessionTTL.Seconds()),
 	}
+	if remember {
+		c.MaxAge = int(SessionTTLRemember.Seconds())
+	}
+	return c
 }
 
 // ClearSessionCookie 构造用于清除会话的 Cookie。

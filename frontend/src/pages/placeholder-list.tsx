@@ -1,3 +1,4 @@
+import { useTranslation } from "@refinedev/core"
 import { ListView, ListViewHeader } from "@/components/refine-ui/views/list-view"
 
 type PlaceholderListPageProps = {
@@ -8,12 +9,16 @@ type PlaceholderListPageProps = {
 /** 资源列表占位，待后端 CRUD 接入后再替换。 */
 export function PlaceholderListPage({
   title,
-  description = "后端尚未接入，此为菜单占位页。",
+  description,
 }: PlaceholderListPageProps) {
+  const { translate } = useTranslation()
+
   return (
     <ListView>
       <ListViewHeader title={title} canCreate={false} />
-      <p className="text-sm text-muted-foreground">{description}</p>
+      <p className="text-sm text-muted-foreground">
+        {description ?? translate("placeholder.default")}
+      </p>
     </ListView>
   )
 }

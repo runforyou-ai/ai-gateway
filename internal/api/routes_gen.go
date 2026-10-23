@@ -31,14 +31,4 @@ func registerGeneratedRoutes(mux *http.ServeMux, backend *direct.Backend) {
 		out, err := backend.Register(r.Context(), meta, input)
 		writeJSON(w, 201, out, err)
 	})
-	mux.HandleFunc("POST /api/echo", func(w http.ResponseWriter, r *http.Request) {
-		meta := requestMeta(r)
-		var input contract.EchoInput
-		if err := decodeJSONBody(r, &input); err != nil {
-			writeJSON(w, http.StatusBadRequest, nil, err)
-			return
-		}
-		out, err := backend.Echo(r.Context(), meta, input)
-		writeJSON(w, 200, out, err)
-	})
 }

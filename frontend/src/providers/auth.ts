@@ -4,7 +4,7 @@ import { register as registerAccount } from "@/api/generated/operations"
 import { login, logout, me } from "@/api/session"
 
 export const authProvider: AuthProvider = {
-  login: async ({ email, password, providerName }) => {
+  login: async ({ email, password, remember, providerName }) => {
     if (providerName) {
       return {
         success: false,
@@ -14,10 +14,10 @@ export const authProvider: AuthProvider = {
         },
       }
     }
-    await login({ email, password })
-    return { success: true, redirectTo: "/" }
+    await login({ email, password, remember: Boolean(remember) })
+    return { success: true, redirectTo: "/console" }
   },
-  register: async ({ email, password, providerName }) => {
+  register: async ({ name, email, password, providerName }) => {
     if (providerName) {
       return {
         success: false,
@@ -27,9 +27,9 @@ export const authProvider: AuthProvider = {
         },
       }
     }
-    await registerAccount({ email, password })
-    await login({ email, password })
-    return { success: true, redirectTo: "/" }
+    await registerAccount({ name, email, password })
+    await login({ email, password, remember: true })
+    return { success: true, redirectTo: "/console" }
   },
   logout: async () => {
     try {
@@ -37,7 +37,7 @@ export const authProvider: AuthProvider = {
     } catch {
       // ignore
     }
-    return { success: true, redirectTo: "/login" }
+    return { success: true, redirectTo: "/" }
   },
   check: async () => {
     try {
@@ -49,14 +49,13 @@ export const authProvider: AuthProvider = {
   },
   getIdentity: async () => {
     const user = await me()
-    const local = user.email.split("@")[0] || user.email
     return {
       id: user.id,
-      name: user.email,
+      name: user.name,
       email: user.email,
       role: user.role,
-      fullName: user.email,
-      firstName: local,
+      fullName: user.name,
+      firstName: user.name,
       lastName: "",
     }
   },

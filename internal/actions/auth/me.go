@@ -19,5 +19,5 @@ func Me(ctx context.Context, db bun.IDB, userID int64) (UserInfo, error) {
 	if err != nil {
 		return UserInfo{}, err
 	}
-	return UserInfo{ID: user.ID, Email: user.Email, Role: user.Role}, nil
+	return UserInfo{ID: user.ID, Name: user.Name, Email: user.Email, Role: user.Role}, nil
 }

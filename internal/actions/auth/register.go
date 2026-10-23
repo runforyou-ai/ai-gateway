@@ -23,10 +23,13 @@ var (
 	ErrWeakPassword = errors.New("weak password")
 	// ErrInvalidEmail 表示邮箱无效。
 	ErrInvalidEmail = errors.New("invalid email")
+	// ErrInvalidName 表示用户名无效。
+	ErrInvalidName = errors.New("invalid name")
 )
 
 // RegisterInput 是注册参数。
 type RegisterInput struct {
+	Name     string
 	Email    string
 	Password string
 }
@@ -38,8 +41,12 @@ type RegisterResult struct {
 
 // Register 注册账号；第一个用户自动成为 admin，其后为 user（需开放注册）。
 func Register(ctx context.Context, db *bun.DB, in RegisterInput) (RegisterResult, error) {
+	name := strings.TrimSpace(in.Name)
 	email := strings.TrimSpace(strings.ToLower(in.Email))
 	password := in.Password
+	if name == "" || len([]rune(name)) > 64 {
+		return RegisterResult{}, ErrInvalidName
+	}
 	if email == "" || !strings.Contains(email, "@") {
 		return RegisterResult{}, ErrInvalidEmail
 	}
@@ -86,6 +93,7 @@ func Register(ctx context.Context, db *bun.DB, in RegisterInput) (RegisterResult
 
 	err = db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
 		user := &model.User{
+			Name:     name,
 			Email:    email,
 			Password: hash,
 			Role:     role,

@@ -1,0 +1,144 @@
+{
+  "pages": {
+    "welcome": {
+      "login": "Sign in"
+    },
+    "login": {
+      "title": "Sign in",
+      "description": "Welcome back",
+      "fields": {
+        "email": "Email",
+        "password": "Password"
+      },
+      "buttons": {
+        "submit": "Sign in",
+        "rememberMe": "Remember me",
+        "noAccount": "No account?",
+        "signup": "Sign up"
+      }
+    },
+    "register": {
+      "title": "Sign up",
+      "description": "Create your account. The first user becomes admin.",
+      "fields": {
+        "name": "Name",
+        "email": "Email",
+        "password": "Password",
+        "confirmPassword": "Confirm password"
+      },
+      "buttons": {
+        "submit": "Sign up",
+        "haveAccount": "Have an account?",
+        "signin": "Sign in"
+      },
+      "errors": {
+        "passwordMismatch": "Passwords don't match",
+        "passwordMismatchDesc": "Please make sure both password fields contain the same value."
+      }
+    },
+    "error": {
+      "info": "You may have forgotten to add the \"{{action}}\" component to \"{{resource}}\" resource.",
+      "404": "Sorry, the page you visited does not exist.",
+      "backHome": "Back Home"
+    }
+  },
+  "roles": {
+    "admin": "Admin",
+    "user": "User"
+  },
+  "account": {
+    "settings": "Settings",
+    "profile": "Profile"
+  },
+  "profile": {
+    "title": "Profile",
+    "saved": "Profile saved",
+    "saving": "Saving…",
+    "passwordHint": "To change your password, enter the current and new password. Leave blank to keep it.",
+    "sections": {
+      "basic": "Basic info",
+      "password": "Change password"
+    },
+    "fields": {
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "avatar": "Avatar",
+      "currentPassword": "Current password",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm new password"
+    },
+    "errors": {
+      "passwordMismatch": "New passwords don't match",
+      "passwordMismatchDesc": "Make sure both new password fields are the same.",
+      "saveFailed": "Failed to save. Please try again."
+    },
+    "fieldErrors": {
+      "generic": {
+        "required": "Required",
+        "invalid": "Invalid",
+        "taken": "Already taken"
+      },
+      "name": {
+        "invalid": "Invalid name"
+      },
+      "email": {
+        "invalid": "Invalid email",
+        "taken": "Email already taken"
+      },
+      "currentPassword": {
+        "required": "Current password is required",
+        "invalid": "Current password is incorrect"
+      },
+      "newPassword": {
+        "required": "New password is required",
+        "invalid": "Password must be at least 8 characters"
+      }
+    }
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "switchToLight": "Switch to light theme",
+    "switchToDark": "Switch to dark theme",
+    "switchToSystem": "Switch to system theme"
+  },
+  "language": {
+    "switch": "Switch language",
+    "zh": "中文",
+    "en": "English"
+  },
+  "settings": {
+    "title": "Settings",
+    "placeholder": "Settings content is not wired yet. Placeholder only."
+  },
+  "buttons": {
+    "logout": "Log out",
+    "loggingOut": "Logging out...",
+    "create": "Create",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "show": "Show",
+    "list": "List",
+    "refresh": "Refresh",
+    "clone": "Clone",
+    "undo": "Undo"
+  },
+  "resources": {
+    "dashboard": "Dashboard",
+    "models": "Models",
+    "providers": "Providers",
+    "api-keys": "API Keys",
+    "settings": "Settings"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "intro": "Admin shell is ready (Refine Layout 01). Usage and status will appear here later.",
+    "currentUser": "Signed in as {{email}}"
+  },
+  "placeholder": {
+    "default": "Backend not wired yet. This is a menu placeholder."
+  }
+}
