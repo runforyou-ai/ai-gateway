@@ -11,6 +11,7 @@ import (
 	"github.com/runforyou-ai/lite-ai-gateway/internal/domain"
 	"github.com/runforyou-ai/lite-ai-gateway/internal/model"
 	"github.com/runforyou-ai/lite-ai-gateway/internal/sysdoc"
+	"github.com/runforyou-ai/support/str"
 	"github.com/uptrace/bun"
 )
 
@@ -47,7 +48,7 @@ func Register(ctx context.Context, db *bun.DB, in RegisterInput) (RegisterResult
 	if name == "" || len([]rune(name)) > 64 {
 		return RegisterResult{}, ErrInvalidName
 	}
-	if email == "" || !strings.Contains(email, "@") {
+	if !str.IsEmail(email) {
 		return RegisterResult{}, ErrInvalidEmail
 	}
 	if len(password) < 8 {

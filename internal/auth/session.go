@@ -1,12 +1,11 @@
 package auth
 
 import (
-	"crypto/rand"
-	"crypto/sha256"
-	"encoding/hex"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/runforyou-ai/support/random"
 )
 
 const (
@@ -18,19 +17,14 @@ const (
 	SessionTTLRemember = 30 * 24 * time.Hour
 )
 
-// NewSessionToken 生成不透明会话令牌。
-func NewSessionToken() (string, error) {
-	var b [32]byte
-	if _, err := rand.Read(b[:]); err != nil {
-		return "", err
-	}
-	return hex.EncodeToString(b[:]), nil
+// NewSessionToken 生成不透明会话令牌及其 SHA-256 哈希（仅存哈希）。
+func NewSessionToken() (token, hash string) {
+	return random.Token(32)
 }
 
 // HashToken 返回令牌的 SHA-256 十六进制哈希。
 func HashToken(token string) string {
-	sum := sha256.Sum256([]byte(token))
-	return hex.EncodeToString(sum[:])
+	return random.HashToken(token)
 }
 
 // TokenFromCookieHeader 从 Cookie 头解析会话令牌。

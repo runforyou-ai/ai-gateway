@@ -9,6 +9,7 @@ import (
 
 	"github.com/runforyou-ai/lite-ai-gateway/internal/auth"
 	"github.com/runforyou-ai/lite-ai-gateway/internal/model"
+	"github.com/runforyou-ai/support/str"
 	"github.com/uptrace/bun"
 )
 
@@ -34,7 +35,7 @@ func UpdateProfile(ctx context.Context, db bun.IDB, userID int64, in UpdateProfi
 	if name == "" || len([]rune(name)) > 64 {
 		return UserInfo{}, ErrInvalidName
 	}
-	if email == "" || !strings.Contains(email, "@") {
+	if !str.IsEmail(email) {
 		return UserInfo{}, ErrInvalidEmail
 	}
 

@@ -58,14 +58,11 @@ func Login(ctx context.Context, db *bun.DB, in LoginInput) (LoginResult, error) 
 		return LoginResult{}, ErrInvalidCredentials
 	}
 
-	token, err := auth.NewSessionToken()
-	if err != nil {
-		return LoginResult{}, err
-	}
+	token, tokenHash := auth.NewSessionToken()
 	ttl := auth.SessionTTLFor(in.Remember)
 	sess := &model.Session{
 		UserID:    user.ID,
-		TokenHash: auth.HashToken(token),
+		TokenHash: tokenHash,
 		ExpiresAt: time.Now().Add(ttl),
 	}
 	if _, err := db.NewInsert().Model(sess).Exec(ctx); err != nil {
