@@ -19,19 +19,22 @@
 | DB | Postgres；goose 迁移；bun 访问；每表对应一个 model |
 | 消息 | NATS JetStream；jetcast 广播；jetq 任务；`nats.url` 空则嵌入，非空则外连 |
 | 前端 | Refine + shadcn + Tailwind；产物 `embed` 进二进制 |
-| 认证 | JWT；`users` + `sessions`；`role` 枚举仅 `admin` / `user` |
+| 认证 | `/api`：HttpOnly Cookie + `sessions`；`/v1`：API Key（后续）；`users.role` 仅 `admin` / `user` |
 | 日志 | 标准库 `log/slog`；控制台按行输出；文件轮转写入日志目录 |
 | 辅助 | `github.com/runforyou-ai/support` |
 
-打包与生成用 `make`（含 `make generate`）。
+Make：`make dev`（前后端）；`make build`（当前系统二进制）；`make build amd64|arm64`（Linux 交叉编译）。
+Docker（生产单机）：先 `make build amd64|arm64`，再 `docker compose up --build`；仅 Postgres + app，NATS 内嵌（`nats.url` 空）；镜像只 COPY Linux 二进制；挂载 `docker/config.yaml`、`/var/log/lite-ai-gateway`（默认 `./data/logs`）、`/data/nats`（默认 `./data/nats`）。
 
 ## 配置与进程
 
-- 默认配置：`$XDG_CONFIG_HOME/lite-ai-gateway/config.yaml`（未设 XDG 时为 `~/.config/...`）。
-- `init` 写入该路径（可参数指定路径）；`serve` 只从该默认路径读，或 `-f` 指定；找不到则报错退出。
-- 开发：允许环境变量覆盖 yaml 缺省；生产：忽略环境变量，只认 yaml。
-- NATS：yaml `nats.url` / 开发可用 `NATS_URL`；空=嵌入，非空=独立或集群。
+- `make dev` / `serve` 读默认 XDG 配置：`$XDG_CONFIG_HOME/lite-ai-gateway/config.yaml`（未设 XDG 时为 `~/.config/...`）；需自行 `go run . init`。
+- `init`：内置默认值；若当前目录有 `.env`，用其中变量覆盖后再写 yaml（`-o` 可指定路径）。
+- `serve` / `reload`：只读 yaml（默认路径或 `-f`）；不读环境变量、不读 `.env`；找不到 yaml 则报错退出。
+
+- NATS：只认 yaml `nats.url`；空=嵌入，非空=独立或集群。
 - pid 默认：与配置同目录的 `lite-ai-gateway.pid`。
+- yaml 里的 `env`（`development` / `production`）只影响日志等默认路径，不改变「是否读环境变量」。
 
 ### 启动配置 vs 系统 settings / state
 
@@ -39,7 +42,7 @@
 
 | 层 | 存哪 | 内容 | 谁改 |
 |---|---|---|---|
-| 启动配置 | yaml（及开发期 env） | 监听地址、Postgres、NATS、日志目录、JWT 密钥等基础设施 | 运维 / `init`；进程 `reload` 可重载 yaml |
+| 启动配置 | yaml（`init` 时可从 `.env` 生成） | 监听地址、Postgres、NATS、日志目录等基础设施 | 运维 / `init`；进程 `reload` 可重载 yaml |
 | `settings` | 表，按 `name` 一组 JSON（可附 `blob`） | 管理员可改的系统设置（如站点名、是否开放注册等） | 管理台 / admin API |
 | `state` | 表，按 `name` 一组 JSON | 部署/运行单例状态（如已安装标记、运行态凭据等），非日常表单 | 安装与内部逻辑写入 |
 
@@ -72,7 +75,7 @@ internal/model/               # 与表一一对应的 bun 结构体
 internal/domain/              # 枚举与领域常量（role、协议等）
 internal/provider/            # 预设供应商及写死的协议透传/转换矩阵
 internal/sysdoc/              # settings/state 按名文档读写
-internal/auth/                # JWT、会话原语
+internal/auth/                # Cookie 会话、Principal 原语
 internal/config/  internal/nats/
 ```
 
@@ -85,12 +88,56 @@ internal/config/  internal/nats/
 - 不强制全局 `repo` 层；查询重再在对应 action 包内拆文件。
 - 公共纯函数优先 support 或小包，避免「utils 垃圾场」。
 
+### 认证
+
+- **管理台 `/api`**：浏览器 Cookie 会话（`HttpOnly`；生产加 `Secure`；`SameSite=Lax` 或按部署调整）。Cookie 存不透明会话令牌，服务端 `sessions` 表为权威（可吊销、滑动过期、多设备）。
+- **不使用 JWT** 做管理台登录态。
+- 登录：校验账号后插入 `sessions`（存令牌哈希、`user_id`、`expires_at` 等），Set-Cookie；登出：删会话行并清 Cookie。
+- 鉴权：读 Cookie → 查 `sessions`（有效且未过期）→ 加载 `users`；`user`/`admin` 按 `role` 判断。活跃请求可滑动延长 `expires_at`。
+- **对外 `/v1`**：使用 API Key（或其它机器凭证），不用浏览器 Cookie；与管理台会话分离。
+- 同域嵌入前端优先，避免跨域 Cookie/CSRF 复杂度；若将来跨域再单独补 CORS/CSRF。
+
 ### 契约与生成
 
 - 在 `contract` 声明方法及 `//contract:route ...`；改完后执行 `make generate`。
 - 生成物：`direct` 分发、`api` 路由、`frontend/src/api/generated/`（`contract.ts`、`operations.ts`）。
 - 生成文件标 `DO NOT EDIT`，禁止手改；只改契约或生成器后重新生成。
 - 手写 `direct` ops：调用 action、做类型/错误映射；业务校验（存在性、唯一性等）在 action。
+
+### `/api` 错误与成功约定
+
+成功：直接返回业务 JSON（或 204 无体），**不**包一层 `{ data: ... }`。
+
+失败：用 **HTTP 状态码** 区分错误大类（前端按 `response.status` 分支）；body 统一为：
+
+```json
+{
+  "message": "可读说明",
+  "fields": { "email": "required" }
+}
+```
+
+- `message`：给人看的摘要；第一期可用中文或英文固定文案，不做 i18n 键体系。
+- `fields`：可选；仅 422 等需要表单高亮时使用；字段名 → 短错误码（如 `required`、`invalid`、`taken`）。
+- 不返回单独的业务 `code` 字段（与状态码一一对应时属冗余）；若将来同一状态码需多种语义再补。
+- 未预期错误：`500`；`message` 对前端固定为通用文案，细节只打 slog。
+
+| HTTP | 含义 |
+|---|---|
+| 400 | 无法解析的请求（坏 JSON、缺 body 等） |
+| 422 | 请求已解析但业务校验失败（可带 `fields`） |
+| 401 | 未登录或令牌无效 |
+| 403 | 已登录但无权限 |
+| 404 | 资源不存在 |
+| 409 | 冲突（唯一约束、状态不允许） |
+| 429 | 限流（可选后续加 `retryAfter`） |
+| 500 | 未分类服务端错误 |
+
+实现约定：
+
+- Action 返回可识别的领域错误；`direct` 映射为上述状态码与 `message`/`fields`；`api` 层统一编码。
+- 前端 `call()`：非 2xx 按状态码分支，解析 `message`/`fields`；表单吃 `fields`，其余 Toast 展示 `message`。
+- `/v1/*` AI 协议错误保持上游/协议原生形状，**不**套用本表（管理台 `/api` 专用）。
 
 ## 数据库
 

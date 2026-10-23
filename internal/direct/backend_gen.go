@@ -30,3 +30,12 @@ func (b *Backend) InstallationStatus(ctx context.Context, meta contract.RequestM
 	}
 	return b.Impl.InstallationStatus(ctx, meta)
 }
+
+// Echo 回显客户端输入的字符串。
+func (b *Backend) Echo(ctx context.Context, meta contract.RequestMeta, input contract.EchoInput) (contract.EchoResult, error) {
+	if err := authorize(ctx, meta, "public"); err != nil {
+		var zero contract.EchoResult
+		return zero, err
+	}
+	return b.Impl.Echo(ctx, meta, input)
+}

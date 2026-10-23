@@ -5,6 +5,7 @@ package api
 import (
 	"net/http"
 
+	"github.com/runforyou-ai/lite-ai-gateway/internal/contract"
 	"github.com/runforyou-ai/lite-ai-gateway/internal/direct"
 )
 
@@ -18,6 +19,16 @@ func registerGeneratedRoutes(mux *http.ServeMux, backend *direct.Backend) {
 	mux.HandleFunc("GET /api/installation/status", func(w http.ResponseWriter, r *http.Request) {
 		meta := requestMeta(r)
 		out, err := backend.InstallationStatus(r.Context(), meta)
+		writeJSON(w, 200, out, err)
+	})
+	mux.HandleFunc("POST /api/echo", func(w http.ResponseWriter, r *http.Request) {
+		meta := requestMeta(r)
+		var input contract.EchoInput
+		if err := decodeJSONBody(r, &input); err != nil {
+			writeJSON(w, http.StatusBadRequest, nil, err)
+			return
+		}
+		out, err := backend.Echo(r.Context(), meta, input)
 		writeJSON(w, 200, out, err)
 	})
 }

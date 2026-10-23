@@ -1,4 +1,5 @@
-// Package config 加载与校验启动配置（yaml；开发期可用环境变量覆盖）。
+// Package config 加载与校验启动配置。
+// init 可用当前目录 .env 覆盖默认值后写入 yaml；serve / reload 只读 yaml。
 package config
 
 import (
@@ -8,18 +9,20 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/joho/godotenv"
 	"gopkg.in/yaml.v3"
 )
 
 const (
-	// EnvDevelopment 允许环境变量覆盖 yaml。
+	// EnvDevelopment 开发环境（影响日志等默认路径）。
 	EnvDevelopment = "development"
-	// EnvProduction 忽略环境变量，只认 yaml。
+	// EnvProduction 生产环境（影响日志等默认路径）。
 	EnvProduction = "production"
 
 	appDirName = "lite-ai-gateway"
 	configName = "config.yaml"
 	pidName    = "lite-ai-gateway.pid"
+	dotEnvName = ".env"
 )
 
 // Config 是进程启动配置。
@@ -28,8 +31,7 @@ type Config struct {
 	Server   ServerConfig   `yaml:"server"`
 	Postgres PostgresConfig `yaml:"postgres"`
 	NATS     NATSConfig     `yaml:"nats"`
-	Log      LogConfig      `yaml:"log"`
-	Auth     AuthConfig     `yaml:"auth"`
+	Log LogConfig `yaml:"log"`
 }
 
 // ServerConfig 是 HTTP 服务配置。
@@ -59,12 +61,7 @@ type LogConfig struct {
 	Dir string `yaml:"dir"`
 }
 
-// AuthConfig 是认证相关启动配置。
-type AuthConfig struct {
-	JWTSecret string `yaml:"jwt_secret"`
-}
-
-// Default 返回 init 写入的默认配置（开发向）。
+// Default 返回内置默认配置。
 func Default() Config {
 	return Config{
 		Env: EnvDevelopment,
@@ -83,10 +80,25 @@ func Default() Config {
 		},
 		NATS: NATSConfig{},
 		Log:  LogConfig{},
-		Auth: AuthConfig{
-			JWTSecret: "change-me-in-production",
-		},
 	}
+}
+
+// ForInit 返回 init 要写入的配置：默认值，若当前目录存在 .env 则用其中变量覆盖。
+// 第二个返回值为实际使用的 .env 路径；未使用时为空。
+func ForInit() (Config, string, error) {
+	cfg := Default()
+	if _, err := os.Stat(dotEnvName); err != nil {
+		if os.IsNotExist(err) {
+			return cfg, "", nil
+		}
+		return Config{}, "", err
+	}
+	values, err := godotenv.Read(dotEnvName)
+	if err != nil {
+		return Config{}, "", fmt.Errorf("read %s: %w", dotEnvName, err)
+	}
+	applyEnvMap(&cfg, values)
+	return cfg, dotEnvName, nil
 }
 
 // DefaultPath 返回 XDG 用户配置路径下的默认 config.yaml。
@@ -153,7 +165,7 @@ func (c Config) PostgresDSN() string {
 	)
 }
 
-// Load 从 path 读取 yaml；开发环境可用环境变量覆盖缺省项。
+// Load 从 path 读取 yaml；不读取环境变量或 .env。
 func Load(path string) (Config, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -165,9 +177,6 @@ func Load(path string) (Config, error) {
 	}
 	if cfg.Env == "" {
 		cfg.Env = EnvDevelopment
-	}
-	if cfg.IsDevelopment() {
-		applyEnvOverrides(&cfg)
 	}
 	if err := cfg.Validate(); err != nil {
 		return Config{}, err
@@ -188,16 +197,16 @@ func (c Config) Validate() error {
 	if c.Postgres.Host == "" || c.Postgres.Database == "" || c.Postgres.User == "" {
 		return fmt.Errorf("postgres host, database and user are required")
 	}
-	if strings.TrimSpace(c.Auth.JWTSecret) == "" {
-		return fmt.Errorf("auth.jwt_secret is required")
-	}
 	return nil
 }
 
 // Write 将配置写成 yaml 文件，按需创建目录。
 func Write(path string, cfg Config) error {
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-		return err
+	dir := filepath.Dir(path)
+	if dir != "" && dir != "." {
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			return err
+		}
 	}
 	data, err := yaml.Marshal(cfg)
 	if err != nil {
@@ -206,45 +215,45 @@ func Write(path string, cfg Config) error {
 	return os.WriteFile(path, data, 0o600)
 }
 
-func applyEnvOverrides(cfg *Config) {
-	if v := os.Getenv("SERVER_HOST"); v != "" {
+func applyEnvMap(cfg *Config, env map[string]string) {
+	if v := env["APP_ENV"]; v != "" {
+		cfg.Env = v
+	}
+	if v := env["SERVER_HOST"]; v != "" {
 		cfg.Server.Host = v
 	}
-	if v := os.Getenv("SERVER_PORT"); v != "" {
+	if v := env["SERVER_PORT"]; v != "" {
 		if p, err := strconv.Atoi(v); err == nil {
 			cfg.Server.Port = p
 		}
 	}
-	if v := os.Getenv("SERVER_PUBLIC_URL"); v != "" {
+	if v := env["SERVER_PUBLIC_URL"]; v != "" {
 		cfg.Server.PublicURL = v
 	}
-	if v := os.Getenv("POSTGRES_HOST"); v != "" {
+	if v := env["POSTGRES_HOST"]; v != "" {
 		cfg.Postgres.Host = v
 	}
-	if v := os.Getenv("POSTGRES_PORT"); v != "" {
+	if v := env["POSTGRES_PORT"]; v != "" {
 		if p, err := strconv.Atoi(v); err == nil {
 			cfg.Postgres.Port = p
 		}
 	}
-	if v := os.Getenv("POSTGRES_USER"); v != "" {
+	if v := env["POSTGRES_USER"]; v != "" {
 		cfg.Postgres.User = v
 	}
-	if v := os.Getenv("POSTGRES_PASSWORD"); v != "" {
+	if v := env["POSTGRES_PASSWORD"]; v != "" {
 		cfg.Postgres.Password = v
 	}
-	if v := os.Getenv("POSTGRES_DB"); v != "" {
+	if v := env["POSTGRES_DB"]; v != "" {
 		cfg.Postgres.Database = v
 	}
-	if v := os.Getenv("POSTGRES_SSLMODE"); v != "" {
+	if v := env["POSTGRES_SSLMODE"]; v != "" {
 		cfg.Postgres.SSLMode = v
 	}
-	if v := os.Getenv("NATS_URL"); v != "" {
+	if v := env["NATS_URL"]; v != "" {
 		cfg.NATS.URL = v
 	}
-	if v := os.Getenv("LOG_DIR"); v != "" {
+	if v := env["LOG_DIR"]; v != "" {
 		cfg.Log.Dir = v
-	}
-	if v := os.Getenv("JWT_SECRET"); v != "" {
-		cfg.Auth.JWTSecret = v
 	}
 }

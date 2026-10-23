@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 
@@ -12,10 +13,21 @@ import (
 
 func requestMeta(r *http.Request) contract.RequestMeta {
 	return contract.RequestMeta{
-		Authorization: r.Header.Get("Authorization"),
-		RemoteAddr:    r.RemoteAddr,
+		Cookie:     r.Header.Get("Cookie"),
+		RemoteAddr: r.RemoteAddr,
 	}
 }
+
+func decodeJSONBody(r *http.Request, dst any) error {
+	defer r.Body.Close()
+	dec := json.NewDecoder(r.Body)
+	if err := dec.Decode(dst); err != nil {
+		return fmt.Errorf("%w: %v", errBadRequest, err)
+	}
+	return nil
+}
+
+var errBadRequest = errors.New("bad request")
 
 type errorBody struct {
 	Error string `json:"error"`
@@ -32,6 +44,9 @@ func writeJSON(w http.ResponseWriter, status int, body any, err error) {
 		case errors.Is(err, direct.ErrForbidden):
 			code = http.StatusForbidden
 			msg = "forbidden"
+		case errors.Is(err, errBadRequest):
+			code = http.StatusBadRequest
+			msg = "bad request"
 		default:
 			slog.Error("api request failed", "err", err)
 		}

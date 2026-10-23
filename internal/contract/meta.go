@@ -4,8 +4,8 @@ import "context"
 
 // RequestMeta 是契约方法共用的请求元数据。
 type RequestMeta struct {
-	// Authorization 是原始 Authorization 头，可能为空。
-	Authorization string
+	// Cookie 是原始 Cookie 头，管理台会话鉴权使用。
+	Cookie string
 	// RemoteAddr 是客户端地址。
 	RemoteAddr string
 }

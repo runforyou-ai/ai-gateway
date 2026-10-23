@@ -13,7 +13,7 @@ type User struct {
 
 	ID           int64        `bun:"id,pk,autoincrement"`
 	Email        string       `bun:"email,notnull"`
-	PasswordHash string       `bun:"password_hash,notnull"`
+	Password     string       `bun:"password,notnull"`
 	Role         domain.Role  `bun:"role,notnull"`
 	CreatedAt    time.Time    `bun:"created_at,nullzero,default:now()"`
 	UpdatedAt    time.Time    `bun:"updated_at,nullzero,default:now()"`

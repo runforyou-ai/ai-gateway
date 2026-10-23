@@ -19,4 +19,8 @@ type Backend interface {
 	// InstallationStatus 返回是否已安装及站点名。
 	//contract:route GET /installation/status auth=public
 	InstallationStatus(context.Context, RequestMeta) (InstallationStatus, error)
+
+	// Echo 回显客户端输入的字符串。
+	//contract:route POST /echo auth=public
+	Echo(context.Context, RequestMeta, EchoInput) (EchoResult, error)
 }

@@ -1,20 +1,26 @@
-.PHONY: generate serve build-linux-amd64 build-linux-arm64 tidy
+.PHONY: dev build amd64 arm64
 
-generate:
-	go generate ./internal/contract
+dev:
+	go run . serve &
+	cd frontend && pnpm dev
 
-serve:
-	go run . serve
+build:
+	@arch="$(filter amd64 arm64,$(MAKECMDGOALS))"; \
+	set -e; \
+	go generate ./internal/contract; \
+	go mod tidy; \
+	( cd frontend && pnpm build ); \
+	rm -rf internal/web/dist; \
+	cp -R frontend/dist internal/web/dist; \
+	mkdir -p build; \
+	if [ -z "$$arch" ]; then \
+		go build -o build/lite-ai-gateway -ldflags "-s -w" .; \
+	elif [ "$$(echo $$arch | wc -w | tr -d " ")" -ne 1 ]; then \
+		echo "usage: make build [amd64|arm64]"; \
+		exit 1; \
+	else \
+		GOARCH=$$arch GOOS=linux go build -o build/lite-ai-gateway-linux-$$arch -ldflags "-s -w" .; \
+	fi
 
-tidy:
-	go mod tidy
-
-build-linux-amd64: generate
-	go version
-	go mod tidy
-	GOARCH=amd64 GOOS=linux go build -o build/lite-ai-gateway-linux-amd64 -ldflags "-s -w" .
-
-build-linux-arm64: generate
-	go version
-	go mod tidy
-	GOARCH=arm64 GOOS=linux go build -o build/lite-ai-gateway-linux-arm64 -ldflags "-s -w" .
+amd64 arm64:
+	@:

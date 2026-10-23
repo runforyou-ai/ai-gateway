@@ -3,7 +3,6 @@ package direct
 import (
 	"context"
 	"errors"
-	"strings"
 
 	"github.com/runforyou-ai/lite-ai-gateway/internal/auth"
 	"github.com/runforyou-ai/lite-ai-gateway/internal/contract"
@@ -17,9 +16,14 @@ var (
 	ErrForbidden = errors.New("forbidden")
 )
 
-// Authorizer 校验 JWT；骨架阶段可为 nil（仅 public 可用）。
+// Authorizer 根据请求解析 Cookie 会话；骨架阶段可为 nil（仅 public 可用）。
 type Authorizer interface {
-	Authenticate(ctx context.Context, authorization string) (auth.Principal, error)
+	Authenticate(ctx context.Context, r CookieRequest) (auth.Principal, error)
+}
+
+// CookieRequest 是鉴权所需的最小请求信息（避免 direct 依赖 net/http 细节时可再收窄）。
+type CookieRequest struct {
+	CookieHeader string
 }
 
 // Options 配置分发层依赖。
@@ -42,7 +46,7 @@ func authorize(ctx context.Context, meta contract.RequestMeta, mode string) erro
 		if authorizer == nil {
 			return ErrUnauthorized
 		}
-		principal, err := authorizer.Authenticate(ctx, meta.Authorization)
+		principal, err := authorizer.Authenticate(ctx, CookieRequest{CookieHeader: meta.Cookie})
 		if err != nil {
 			return ErrUnauthorized
 		}
@@ -53,13 +57,4 @@ func authorize(ctx context.Context, meta contract.RequestMeta, mode string) erro
 	default:
 		return ErrUnauthorized
 	}
-}
-
-// BearerToken 从 Authorization 头取出 bearer token。
-func BearerToken(authorization string) string {
-	const prefix = "Bearer "
-	if strings.HasPrefix(authorization, prefix) {
-		return strings.TrimSpace(authorization[len(prefix):])
-	}
-	return ""
 }

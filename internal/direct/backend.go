@@ -2,6 +2,7 @@ package direct
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/runforyou-ai/lite-ai-gateway/internal/actions/installation"
 	"github.com/runforyou-ai/lite-ai-gateway/internal/contract"
@@ -25,6 +26,13 @@ func (o *Ops) InstallationStatus(ctx context.Context, _ contract.RequestMeta) (c
 		return contract.InstallationStatus{}, err
 	}
 	return contract.InstallationStatus{Installed: installed, SiteName: siteName}, nil
+}
+
+// Echo 回显输入字符串。
+func (o *Ops) Echo(_ context.Context, _ contract.RequestMeta, input contract.EchoInput) (contract.EchoResult, error) {
+	return contract.EchoResult{
+		Message: fmt.Sprintf("Received, you entered %s", input.Text),
+	}, nil
 }
 
 // NewBackend 组装生成分发层与手写实现。

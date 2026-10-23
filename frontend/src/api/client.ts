@@ -4,6 +4,8 @@ export type CallOptions = {
   body?: unknown
 }
 
+const apiBase = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, "") ?? ""
+
 export async function call<T>(opts: CallOptions, signal?: AbortSignal): Promise<T> {
   const init: RequestInit = {
     method: opts.method,
@@ -14,7 +16,7 @@ export async function call<T>(opts: CallOptions, signal?: AbortSignal): Promise<
     init.headers = { ...init.headers, "Content-Type": "application/json" }
     init.body = JSON.stringify(opts.body)
   }
-  const res = await fetch(opts.path, init)
+  const res = await fetch(`${apiBase}${opts.path}`, init)
   if (!res.ok) {
     const text = await res.text()
     throw new Error(text || res.statusText)

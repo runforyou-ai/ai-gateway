@@ -13,3 +13,8 @@ export function installationStatus(signal?: AbortSignal) {
   return call<contract.InstallationStatus>({ method: "GET", path: "/api/installation/status" }, signal)
 }
 
+/** 回显客户端输入的字符串。 */
+export function echo(input: contract.EchoInput, signal?: AbortSignal) {
+  return call<contract.EchoResult>({ method: "POST", path: "/api/echo", body: input }, signal)
+}
+

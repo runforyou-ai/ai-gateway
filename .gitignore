@@ -2,6 +2,8 @@
 .idea/
 build/
 .env
+/config.yaml
 data/logs/
 data/nats/
 *.pid
+frontend/dist/

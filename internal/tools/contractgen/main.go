@@ -16,8 +16,6 @@ import (
 	"unicode/utf8"
 )
 
-const directivePrefix = "//contract:route "
-
 type route struct {
 	method string
 	path   string
@@ -29,6 +27,8 @@ type method struct {
 	name   string
 	doc    []string
 	route  route
+	hasIn  bool
+	inTyp  string
 	hasOut bool
 	outTyp string
 }
@@ -50,6 +50,10 @@ func run() error {
 	if err != nil {
 		return err
 	}
+	structs, err := parseJSONStructs(contractDir)
+	if err != nil {
+		return err
+	}
 	goFiles := map[string][]byte{
 		filepath.Join(root, "internal", "direct", "backend_gen.go"): generateDirect(methods),
 		filepath.Join(root, "internal", "api", "routes_gen.go"):     generateHTTP(methods),
@@ -67,7 +71,7 @@ func run() error {
 	if err := os.MkdirAll(generated, 0o755); err != nil {
 		return err
 	}
-	if err := writeIfChanged(filepath.Join(generated, "contract.ts"), generateTSContract(methods)); err != nil {
+	if err := writeIfChanged(filepath.Join(generated, "contract.ts"), generateTSContract(methods, structs)); err != nil {
 		return err
 	}
 	return writeIfChanged(filepath.Join(generated, "operations.ts"), generateTSOperations(methods))
@@ -103,7 +107,7 @@ func parseBackend(dir string) ([]method, error) {
 					return nil, fmt.Errorf("Backend is not an interface")
 				}
 				iface = it
-				ifaceDoc = methodDocs(f, it)
+				ifaceDoc = methodDocs(it)
 			}
 		}
 	}
@@ -122,11 +126,18 @@ func parseBackend(dir string) ([]method, error) {
 		if err != nil {
 			return nil, fmt.Errorf("%s: %w", name, err)
 		}
+		hasIn, inTyp, err := parseInput(fn)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", name, err)
+		}
 		hasOut, outTyp, err := parseResult(fn)
 		if err != nil {
 			return nil, fmt.Errorf("%s: %w", name, err)
 		}
-		methods = append(methods, method{name: name, doc: docs, route: rt, hasOut: hasOut, outTyp: outTyp})
+		methods = append(methods, method{
+			name: name, doc: docs, route: rt,
+			hasIn: hasIn, inTyp: inTyp, hasOut: hasOut, outTyp: outTyp,
+		})
 	}
 	if len(methods) == 0 {
 		return nil, fmt.Errorf("Backend has no methods")
@@ -134,7 +145,77 @@ func parseBackend(dir string) ([]method, error) {
 	return methods, nil
 }
 
-func methodDocs(f *ast.File, iface *ast.InterfaceType) map[*ast.Field][]string {
+type jsonField struct {
+	name string
+	typ  string
+}
+
+func parseJSONStructs(dir string) (map[string][]jsonField, error) {
+	fset := token.NewFileSet()
+	pkgs, err := parser.ParseDir(fset, dir, nil, parser.ParseComments)
+	if err != nil {
+		return nil, err
+	}
+	out := map[string][]jsonField{}
+	for _, pkg := range pkgs {
+		for _, f := range pkg.Files {
+			for _, decl := range f.Decls {
+				gen, ok := decl.(*ast.GenDecl)
+				if !ok || gen.Tok != token.TYPE {
+					continue
+				}
+				for _, spec := range gen.Specs {
+					ts, ok := spec.(*ast.TypeSpec)
+					if !ok {
+						continue
+					}
+					st, ok := ts.Type.(*ast.StructType)
+					if !ok {
+						continue
+					}
+					var fields []jsonField
+					for _, field := range st.Fields.List {
+						if len(field.Names) == 0 {
+							continue
+						}
+						jsonName := field.Names[0].Name
+						if field.Tag != nil {
+							tag := strings.Trim(field.Tag.Value, "`")
+							for _, part := range strings.Fields(tag) {
+								if strings.HasPrefix(part, "json:\"") {
+									v := strings.TrimPrefix(part, "json:\"")
+									v = strings.TrimSuffix(v, "\"")
+									if i := strings.IndexByte(v, ','); i >= 0 {
+										v = v[:i]
+									}
+									if v != "" && v != "-" {
+										jsonName = v
+									}
+								}
+							}
+						}
+						tsType := "unknown"
+						if ident, ok := field.Type.(*ast.Ident); ok {
+							switch ident.Name {
+							case "string":
+								tsType = "string"
+							case "bool":
+								tsType = "boolean"
+							case "int", "int64", "int32":
+								tsType = "number"
+							}
+						}
+						fields = append(fields, jsonField{name: jsonName, typ: tsType})
+					}
+					out[ts.Name.Name] = fields
+				}
+			}
+		}
+	}
+	return out, nil
+}
+
+func methodDocs(iface *ast.InterfaceType) map[*ast.Field][]string {
 	out := map[*ast.Field][]string{}
 	for _, field := range iface.Methods.List {
 		var lines []string
@@ -145,23 +226,11 @@ func methodDocs(f *ast.File, iface *ast.InterfaceType) map[*ast.Field][]string {
 		}
 		out[field] = lines
 	}
-	_ = f
 	return out
 }
 
 func parseRoute(docs []string) (route, error) {
 	var line string
-	for _, d := range docs {
-		if strings.HasPrefix("//"+d, directivePrefix) || strings.HasPrefix(d, "contract:route ") {
-			line = d
-			break
-		}
-		if strings.HasPrefix(d, "contract:route ") {
-			line = d
-			break
-		}
-	}
-	// docs stored without //
 	for _, d := range docs {
 		if strings.HasPrefix(d, "contract:route ") {
 			line = d
@@ -196,6 +265,25 @@ func parseRoute(docs []string) (route, error) {
 		}
 	}
 	return rt, nil
+}
+
+func parseInput(fn *ast.FuncType) (bool, string, error) {
+	if fn.Params == nil || len(fn.Params.List) < 2 {
+		return false, "", fmt.Errorf("want at least (context.Context, RequestMeta)")
+	}
+	params := fn.Params.List
+	if len(params) == 2 {
+		return false, "", nil
+	}
+	if len(params) != 3 {
+		return false, "", fmt.Errorf("want (ctx, meta) or (ctx, meta, Input)")
+	}
+	switch t := params[2].Type.(type) {
+	case *ast.Ident:
+		return true, t.Name, nil
+	default:
+		return false, "", fmt.Errorf("unsupported input type")
+	}
 }
 
 func parseResult(fn *ast.FuncType) (bool, string, error) {
@@ -235,14 +323,20 @@ func generateDirect(methods []method) []byte {
 	b.WriteString("type Backend struct {\n\tImpl contract.Backend\n}\n\n")
 	for _, m := range methods {
 		writeMethodDoc(&b, m)
+		sigIn := ""
+		callIn := ""
+		if m.hasIn {
+			sigIn = ", input contract." + m.inTyp
+			callIn = ", input"
+		}
 		if m.hasOut {
-			fmt.Fprintf(&b, "func (b *Backend) %s(ctx context.Context, meta contract.RequestMeta) (contract.%s, error) {\n", m.name, m.outTyp)
+			fmt.Fprintf(&b, "func (b *Backend) %s(ctx context.Context, meta contract.RequestMeta%s) (contract.%s, error) {\n", m.name, sigIn, m.outTyp)
 			fmt.Fprintf(&b, "\tif err := authorize(ctx, meta, %q); err != nil {\n\t\tvar zero contract.%s\n\t\treturn zero, err\n\t}\n", m.route.auth, m.outTyp)
-			fmt.Fprintf(&b, "\treturn b.Impl.%s(ctx, meta)\n}\n\n", m.name)
+			fmt.Fprintf(&b, "\treturn b.Impl.%s(ctx, meta%s)\n}\n\n", m.name, callIn)
 		} else {
-			fmt.Fprintf(&b, "func (b *Backend) %s(ctx context.Context, meta contract.RequestMeta) error {\n", m.name)
+			fmt.Fprintf(&b, "func (b *Backend) %s(ctx context.Context, meta contract.RequestMeta%s) error {\n", m.name, sigIn)
 			fmt.Fprintf(&b, "\tif err := authorize(ctx, meta, %q); err != nil {\n\t\treturn err\n\t}\n", m.route.auth)
-			fmt.Fprintf(&b, "\treturn b.Impl.%s(ctx, meta)\n}\n\n", m.name)
+			fmt.Fprintf(&b, "\treturn b.Impl.%s(ctx, meta%s)\n}\n\n", m.name, callIn)
 		}
 	}
 	return []byte(b.String())
@@ -254,6 +348,7 @@ func generateHTTP(methods []method) []byte {
 	b.WriteString("package api\n\n")
 	b.WriteString("import (\n")
 	b.WriteString("\t\"net/http\"\n\n")
+	b.WriteString("\t\"github.com/runforyou-ai/lite-ai-gateway/internal/contract\"\n")
 	b.WriteString("\t\"github.com/runforyou-ai/lite-ai-gateway/internal/direct\"\n")
 	b.WriteString(")\n\n")
 	b.WriteString("// registerGeneratedRoutes 注册契约生成的 /api 路由。\n")
@@ -262,11 +357,20 @@ func generateHTTP(methods []method) []byte {
 		pattern := m.route.method + " /api" + m.route.path
 		fmt.Fprintf(&b, "\tmux.HandleFunc(%q, func(w http.ResponseWriter, r *http.Request) {\n", pattern)
 		b.WriteString("\t\tmeta := requestMeta(r)\n")
+		callArgs := "r.Context(), meta"
+		if m.hasIn {
+			fmt.Fprintf(&b, "\t\tvar input contract.%s\n", m.inTyp)
+			b.WriteString("\t\tif err := decodeJSONBody(r, &input); err != nil {\n")
+			b.WriteString("\t\t\twriteJSON(w, http.StatusBadRequest, nil, err)\n")
+			b.WriteString("\t\t\treturn\n")
+			b.WriteString("\t\t}\n")
+			callArgs += ", input"
+		}
 		if m.hasOut {
-			fmt.Fprintf(&b, "\t\tout, err := backend.%s(r.Context(), meta)\n", m.name)
+			fmt.Fprintf(&b, "\t\tout, err := backend.%s(%s)\n", m.name, callArgs)
 			fmt.Fprintf(&b, "\t\twriteJSON(w, %d, out, err)\n", m.route.status)
 		} else {
-			fmt.Fprintf(&b, "\t\terr := backend.%s(r.Context(), meta)\n", m.name)
+			fmt.Fprintf(&b, "\t\terr := backend.%s(%s)\n", m.name, callArgs)
 			fmt.Fprintf(&b, "\t\twriteJSON(w, %d, nil, err)\n", m.route.status)
 		}
 		b.WriteString("\t})\n")
@@ -275,23 +379,44 @@ func generateHTTP(methods []method) []byte {
 	return []byte(b.String())
 }
 
-func generateTSContract(methods []method) []byte {
-	types := map[string]bool{}
+func generateTSContract(methods []method, structs map[string][]jsonField) []byte {
+	needed := map[string]bool{}
 	for _, m := range methods {
+		if m.hasIn {
+			needed[m.inTyp] = true
+		}
 		if m.hasOut {
-			types[m.outTyp] = true
+			needed[m.outTyp] = true
 		}
 	}
 	var b strings.Builder
 	b.WriteString("// Code generated by contractgen. DO NOT EDIT.\n\n")
-	if types["HealthStatus"] {
-		b.WriteString("export type HealthStatus = {\n  ok: boolean\n}\n\n")
+	names := make([]string, 0, len(needed))
+	for name := range needed {
+		names = append(names, name)
 	}
-	if types["InstallationStatus"] {
-		b.WriteString("export type InstallationStatus = {\n  installed: boolean\n  siteName: string\n}\n\n")
+	// stable-ish order
+	for _, name := range sortedStrings(names) {
+		fields := structs[name]
+		fmt.Fprintf(&b, "export type %s = {\n", name)
+		for _, f := range fields {
+			fmt.Fprintf(&b, "  %s: %s\n", f.name, f.typ)
+		}
+		b.WriteString("}\n\n")
 	}
-	_ = methods
 	return []byte(b.String())
+}
+
+func sortedStrings(in []string) []string {
+	out := append([]string(nil), in...)
+	for i := 0; i < len(out); i++ {
+		for j := i + 1; j < len(out); j++ {
+			if out[j] < out[i] {
+				out[i], out[j] = out[j], out[i]
+			}
+		}
+	}
+	return out
 }
 
 func generateTSOperations(methods []method) []byte {
@@ -304,13 +429,18 @@ func generateTSOperations(methods []method) []byte {
 		for _, line := range docLines(m) {
 			fmt.Fprintf(&b, "/** %s */\n", line)
 		}
-		if m.hasOut {
-			fmt.Fprintf(&b, "export function %s(signal?: AbortSignal) {\n", fn)
-			fmt.Fprintf(&b, "  return call<contract.%s>({ method: %q, path: %q }, signal)\n}\n\n", m.outTyp, m.route.method, "/api"+m.route.path)
-		} else {
-			fmt.Fprintf(&b, "export function %s(signal?: AbortSignal) {\n", fn)
-			fmt.Fprintf(&b, "  return call<void>({ method: %q, path: %q }, signal)\n}\n\n", m.route.method, "/api"+m.route.path)
+		args := "signal?: AbortSignal"
+		callBody := ""
+		if m.hasIn {
+			args = "input: contract." + m.inTyp + ", signal?: AbortSignal"
+			callBody = ", body: input"
 		}
+		ret := "void"
+		if m.hasOut {
+			ret = "contract." + m.outTyp
+		}
+		fmt.Fprintf(&b, "export function %s(%s) {\n", fn, args)
+		fmt.Fprintf(&b, "  return call<%s>({ method: %q, path: %q%s }, signal)\n}\n\n", ret, m.route.method, "/api"+m.route.path, callBody)
 	}
 	return []byte(b.String())
 }
@@ -336,7 +466,6 @@ func docLines(m method) []string {
 	if len(lines) == 0 {
 		return []string{m.name}
 	}
-	// strip leading method name if present
 	first := lines[0]
 	if strings.HasPrefix(first, m.name+" ") {
 		lines[0] = strings.TrimPrefix(first, m.name+" ")

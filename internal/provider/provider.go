@@ -17,7 +17,7 @@ type Spec struct {
 	ID               ID
 	Name             string
 	NativeProtocols  []domain.Protocol
-	ConvertToNative  map[domain.Protocol]domain.Protocol // 客户端协议 -> 上游原生协议
+	ConvertToNative  map[domain.Protocol]domain.Protocol
 }
 
 // All 返回全部预设；不支持自定义供应商。

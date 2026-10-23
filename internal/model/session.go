@@ -6,7 +6,7 @@ import (
 	"github.com/uptrace/bun"
 )
 
-// Session 对应登录会话。
+// Session 对应管理台 Cookie 会话。
 type Session struct {
 	bun.BaseModel `bun:"table:sessions,alias:s"`
 

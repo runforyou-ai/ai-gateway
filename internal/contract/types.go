@@ -10,3 +10,13 @@ type InstallationStatus struct {
 	Installed bool   `json:"installed"`
 	SiteName  string `json:"siteName"`
 }
+
+// EchoInput 是回显请求。
+type EchoInput struct {
+	Text string `json:"text"`
+}
+
+// EchoResult 是回显响应。
+type EchoResult struct {
+	Message string `json:"message"`
+}

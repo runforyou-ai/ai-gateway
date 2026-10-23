@@ -12,7 +12,7 @@ var initOut string
 
 var initCmd = &cobra.Command{
 	Use:   "init",
-	Short: "在标准位置写入默认 yaml 配置",
+	Short: "写入默认 yaml 配置（若存在 .env 则用其覆盖默认值）",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		path := initOut
 		if path == "" {
@@ -27,8 +27,15 @@ var initCmd = &cobra.Command{
 		} else if !os.IsNotExist(err) {
 			return err
 		}
-		if err := config.Write(path, config.Default()); err != nil {
+		cfg, dotenv, err := config.ForInit()
+		if err != nil {
 			return err
+		}
+		if err := config.Write(path, cfg); err != nil {
+			return err
+		}
+		if dotenv != "" {
+			fmt.Println("applied", dotenv)
 		}
 		fmt.Println("wrote", path)
 		return nil
