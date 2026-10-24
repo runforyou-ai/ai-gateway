@@ -48,7 +48,7 @@ function App() {
     translate: (key: string, options?: Record<string, unknown>) =>
       String(t(key, options)),
     changeLocale: (lang: string) => i18n.changeLanguage(lang),
-    getLocale: () => i18n.language,
+    getLocale: () => i18n.resolvedLanguage ?? i18n.language,
   };
 
   return (
