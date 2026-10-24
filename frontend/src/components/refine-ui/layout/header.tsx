@@ -1,12 +1,12 @@
 import type { ReactNode } from "react";
 import {
-  useGetLocale,
   useLink,
   useLogout,
   useRefineOptions,
   useSetLocale,
   useTranslation,
 } from "@refinedev/core";
+import { useTranslation as useI18nTranslation } from "react-i18next";
 import { UserAvatar } from "@/components/refine-ui/layout/user-avatar";
 import { useTheme } from "@/components/refine-ui/theme/theme-provider";
 import { Button } from "@/components/ui/button";
@@ -143,9 +143,11 @@ type HeaderIconButtonProps = {
 
 function LanguageSwitcher({ triggerClassName }: HeaderIconButtonProps) {
   const { translate } = useTranslation();
-  const getLocale = useGetLocale();
+  const { i18n } = useI18nTranslation();
   const setLocale = useSetLocale();
-  const current = (getLocale() ?? "en").toLowerCase().startsWith("zh")
+  const current = (i18n.resolvedLanguage ?? i18n.language ?? "en")
+    .toLowerCase()
+    .startsWith("zh")
     ? "zh"
     : "en";
 
