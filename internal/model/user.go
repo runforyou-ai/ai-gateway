@@ -3,7 +3,7 @@ package model
 import (
 	"time"
 
-	"github.com/runforyou-ai/lite-ai-gateway/internal/domain"
+	"github.com/runforyou-ai/ai-gateway/internal/domain"
 	"github.com/uptrace/bun"
 )
 

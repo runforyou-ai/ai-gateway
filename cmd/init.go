@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/runforyou-ai/lite-ai-gateway/internal/config"
+	"github.com/runforyou-ai/ai-gateway/internal/config"
 	"github.com/spf13/cobra"
 )
 

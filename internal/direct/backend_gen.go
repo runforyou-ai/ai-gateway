@@ -5,7 +5,7 @@ package direct
 import (
 	"context"
 
-	"github.com/runforyou-ai/lite-ai-gateway/internal/contract"
+	"github.com/runforyou-ai/ai-gateway/internal/contract"
 )
 
 // Backend 由契约生成的认证分发层，嵌入手写实现。

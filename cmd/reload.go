@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/runforyou-ai/lite-ai-gateway/internal/process"
+	"github.com/runforyou-ai/ai-gateway/internal/process"
 	"github.com/spf13/cobra"
 )
 

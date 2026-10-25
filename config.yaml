@@ -6,11 +6,9 @@ server:
 postgres:
   host: postgres
   port: 5432
-  user: lite-ai-gateway
-  password: lite-ai-gateway
-  database: lite-ai-gateway
+  user: ai-gateway
+  password: ai-gateway
+  database: ai-gateway
   sslmode: disable
-nats:
-  url: ""
 log:
-  dir: /var/log/lite-ai-gateway
+  dir: /var/log/ai-gateway

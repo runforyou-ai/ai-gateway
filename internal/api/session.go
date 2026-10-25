@@ -5,9 +5,9 @@ import (
 	"errors"
 	"net/http"
 
-	actionauth "github.com/runforyou-ai/lite-ai-gateway/internal/actions/auth"
-	"github.com/runforyou-ai/lite-ai-gateway/internal/auth"
-	"github.com/runforyou-ai/lite-ai-gateway/internal/direct"
+	actionauth "github.com/runforyou-ai/ai-gateway/internal/actions/auth"
+	"github.com/runforyou-ai/ai-gateway/internal/auth"
+	"github.com/runforyou-ai/ai-gateway/internal/direct"
 	"github.com/uptrace/bun"
 )
 

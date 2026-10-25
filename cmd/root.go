@@ -7,8 +7,8 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "lite-ai-gateway",
-	Short: "轻量级 AI 网关",
+	Use:   "ai-gateway",
+	Short: "AI API 网关",
 	Long:  "以模型为中心的统一 AI API 网关：多供应商、多协议透传与转换、路由与计费。",
 }
 

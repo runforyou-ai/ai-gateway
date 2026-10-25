@@ -7,8 +7,8 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/runforyou-ai/lite-ai-gateway/internal/contract"
-	"github.com/runforyou-ai/lite-ai-gateway/internal/direct"
+	"github.com/runforyou-ai/ai-gateway/internal/contract"
+	"github.com/runforyou-ai/ai-gateway/internal/direct"
 )
 
 func requestMeta(r *http.Request) contract.RequestMeta {

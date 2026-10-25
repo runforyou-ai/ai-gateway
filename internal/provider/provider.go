@@ -1,7 +1,7 @@
 // Package provider 定义平台预设供应商及写死的协议透传/转换矩阵。
 package provider
 
-import "github.com/runforyou-ai/lite-ai-gateway/internal/domain"
+import "github.com/runforyou-ai/ai-gateway/internal/domain"
 
 // ID 是预设供应商标识。
 type ID string

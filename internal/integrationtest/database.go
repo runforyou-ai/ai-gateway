@@ -15,7 +15,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/runforyou-ai/lite-ai-gateway/internal/migrate"
+	"github.com/runforyou-ai/ai-gateway/internal/migrate"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
 	"github.com/uptrace/bun/driver/pgdriver"
@@ -57,9 +57,9 @@ func openOnce() (*bun.DB, error) {
 		}
 		port = n
 	}
-	user := envOr("TEST_POSTGRES_USER", "lite-ai-gateway")
-	password := envOr("TEST_POSTGRES_PASSWORD", "lite-ai-gateway")
-	database := envOr("TEST_POSTGRES_DATABASE", "lite-ai-gateway_test")
+	user := envOr("TEST_POSTGRES_USER", "ai-gateway")
+	password := envOr("TEST_POSTGRES_PASSWORD", "ai-gateway")
+	database := envOr("TEST_POSTGRES_DATABASE", "ai-gateway_test")
 	sslmode := envOr("TEST_POSTGRES_SSLMODE", "disable")
 	if !strings.HasSuffix(database, "_test") {
 		return nil, fmt.Errorf("TEST_POSTGRES_DATABASE %q must end with _test", database)

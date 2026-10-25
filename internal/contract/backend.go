@@ -2,7 +2,7 @@ package contract
 
 import "context"
 
-//go:generate go run github.com/runforyou-ai/lite-ai-gateway/internal/tools/contractgen
+//go:generate go run ../tools/contractgen
 
 // Backend 是管理 API 的唯一契约源。
 //

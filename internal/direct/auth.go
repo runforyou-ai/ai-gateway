@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 
-	"github.com/runforyou-ai/lite-ai-gateway/internal/auth"
-	"github.com/runforyou-ai/lite-ai-gateway/internal/contract"
-	"github.com/runforyou-ai/lite-ai-gateway/internal/domain"
+	"github.com/runforyou-ai/ai-gateway/internal/auth"
+	"github.com/runforyou-ai/ai-gateway/internal/contract"
+	"github.com/runforyou-ai/ai-gateway/internal/domain"
 )
 
 var (

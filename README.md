@@ -1,8 +1,10 @@
-# Lite AI Gateway
+# AI Gateway
 
 以模型为中心的统一 AI API 网关。把大语言模型、向量、语音、图像、视频等能力收进同一套入口，对接平台预设的云厂商，支持多协议透传与转换、智能路由、负载均衡和统一计费。一个程序即可运行，管理界面打在程序里。
 
 客户端只用统一的模型名和常见协议（如 OpenAI Chat Completions / Responses、Anthropic Messages、Gemini 等）即可调用，不必关心背后实际走哪家供应商。
+
+不支持自定义供应商；协议透传 / 转换矩阵写死在预设中，管理台不可改开关、不可新增供应商类型。
 
 ## 核心设计
 
@@ -48,13 +50,12 @@
 
 | 模块 | 做什么 |
 |---|---|
-| 模型目录 | 模型分类、统一标识、能力 |
-| 供应商 | 平台预设供应商、凭证与连接 |
-| 端点 | 价格、路由等可配项（协议能力来自预设） |
-| 协议处理 | 识别协议，按预设透传或转换 |
-| 路由引擎 | 筛选端点、均衡、智能路由、故障转移 |
-| 用量与计费 | 统计、成本、配额 |
-| 可观测性 | 调用日志、性能与健康 |
+| Model Registry | 模型目录与能力 |
+| Provider / Endpoint Registry | 预设供应商实例、端点与可配项 |
+| Protocol Handler | 协议识别、透传或转换 |
+| Routing Engine | 筛选、均衡、故障转移 |
+| Usage & Billing | 计量、配额、计费 |
+| Observability | 调用日志与指标 |
 
 ## 一次请求怎么走
 
@@ -77,9 +78,21 @@
 - **统一计量**：按模型类型选用合适的计量方式。
 - **高可用**：多供应商冗余、均衡与故障转移。
 
+## 待做能力
+
+- 对外 `/v1/*`：多协议接入、流式、透传与 RelayKit 转换。
+- API Key 鉴权（与管理台 Cookie 分离）。
+- 模型目录：类型、统一标识、能力定义；管理台 CRUD。
+- 预设供应商实例与端点：凭证、上游标识、价格、限额、路由权重 / 优先级。
+- 智能路由、负载均衡、健康检查与故障转移。
+- 用量与计费：Token、次数、字符、音视频时长、图像张数等；额度与限流（Key / 模型、供应商、端点）。
+- 调用日志与可观测性（延迟、错误率、成本）。
+- 管理台：模型 / 供应商 / 端点 / Key / 用量等业务页（替换占位）。
+- 更多预设供应商与对外协议；按需扩展能力映射与路由策略。
+
 ## 运行与部署
 
-面向 Linux。配置文件由 `init` 生成（可用当前目录 `.env` 覆盖默认值），`serve` / `reload` 只读 yaml；默认路径为 `~/.config/lite-ai-gateway/config.yaml`（或 `$XDG_CONFIG_HOME/lite-ai-gateway/config.yaml`）。
+面向 Linux。配置文件由 `init` 生成（可用当前目录 `.env` 覆盖默认值），`serve` / `reload` 只读 yaml；默认路径为 `~/.config/ai-gateway/config.yaml`（或 `$XDG_CONFIG_HOME/ai-gateway/config.yaml`）。
 
 ```bash
 go run . init
@@ -89,7 +102,7 @@ make build amd64                  # 或 arm64，供 Linux / Docker
 docker compose up --build         # 需先按宿主机架构完成交叉编译
 ```
 
-镜像：`ghcr.io/runforyou-ai/lite-ai-gateway`。进程命令：`serve` / `stop` / `restart` / `reload`。
+镜像：`ghcr.io/runforyou-ai/ai-gateway`。进程命令：`serve` / `stop` / `restart` / `reload`。
 
 管理台用浏览器登录（Cookie 会话）；调用 AI 接口使用 API Key。角色只有管理员与普通用户；系统里第一个注册的用户自动成为管理员。
 

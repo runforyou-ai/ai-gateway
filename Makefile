@@ -17,12 +17,12 @@ build:
 	cp -R frontend/dist internal/web/dist; \
 	mkdir -p build; \
 	if [ -z "$$arch" ]; then \
-		go build -o build/lite-ai-gateway -ldflags "-s -w" .; \
+		go build -o build/ai-gateway -ldflags "-s -w" .; \
 	elif [ "$$(echo $$arch | wc -w | tr -d " ")" -ne 1 ]; then \
 		echo "usage: make build [amd64|arm64]"; \
 		exit 1; \
 	else \
-		GOARCH=$$arch GOOS=linux go build -o build/lite-ai-gateway-linux-$$arch -ldflags "-s -w" .; \
+		GOARCH=$$arch GOOS=linux go build -o build/ai-gateway-linux-$$arch -ldflags "-s -w" .; \
 	fi
 
 amd64 arm64:

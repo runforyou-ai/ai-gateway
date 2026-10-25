@@ -3,8 +3,8 @@ package installation
 import (
 	"context"
 
-	"github.com/runforyou-ai/lite-ai-gateway/internal/model"
-	"github.com/runforyou-ai/lite-ai-gateway/internal/sysdoc"
+	"github.com/runforyou-ai/ai-gateway/internal/model"
+	"github.com/runforyou-ai/ai-gateway/internal/sysdoc"
 	"github.com/uptrace/bun"
 )
 

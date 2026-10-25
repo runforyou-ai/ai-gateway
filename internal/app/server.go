@@ -1,4 +1,4 @@
-// Package app 组装进程生命周期：数据库、NATS、HTTP、信号。
+// Package app 组装进程生命周期：数据库、HTTP、信号。
 package app
 
 import (
@@ -13,14 +13,13 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/runforyou-ai/lite-ai-gateway/internal/api"
-	"github.com/runforyou-ai/lite-ai-gateway/internal/auth"
-	"github.com/runforyou-ai/lite-ai-gateway/internal/config"
-	"github.com/runforyou-ai/lite-ai-gateway/internal/direct"
-	"github.com/runforyou-ai/lite-ai-gateway/internal/logging"
-	"github.com/runforyou-ai/lite-ai-gateway/internal/migrate"
-	natspkg "github.com/runforyou-ai/lite-ai-gateway/internal/nats"
-	"github.com/runforyou-ai/lite-ai-gateway/internal/process"
+	"github.com/runforyou-ai/ai-gateway/internal/api"
+	"github.com/runforyou-ai/ai-gateway/internal/auth"
+	"github.com/runforyou-ai/ai-gateway/internal/config"
+	"github.com/runforyou-ai/ai-gateway/internal/direct"
+	"github.com/runforyou-ai/ai-gateway/internal/logging"
+	"github.com/runforyou-ai/ai-gateway/internal/migrate"
+	"github.com/runforyou-ai/ai-gateway/internal/process"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
 	"github.com/uptrace/bun/driver/pgdriver"
@@ -65,12 +64,6 @@ func Run(cfgPath, pidPath string) error {
 		return err
 	}
 	db := bun.NewDB(sqldb, pgdialect.New())
-
-	natsConn, err := natspkg.Connect(cfg.NATS.URL)
-	if err != nil {
-		return err
-	}
-	defer natsConn.Close()
 
 	sessionAuth := &auth.SessionAuthorizer{DB: db}
 	direct.SetAuthorizer(sessionAuthorizer{inner: sessionAuth})

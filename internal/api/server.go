@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/runforyou-ai/lite-ai-gateway/internal/direct"
-	"github.com/runforyou-ai/lite-ai-gateway/internal/web"
+	"github.com/runforyou-ai/ai-gateway/internal/direct"
+	"github.com/runforyou-ai/ai-gateway/internal/web"
 	"github.com/uptrace/bun"
 )
 

@@ -5,11 +5,11 @@ import (
 	"errors"
 	"testing"
 
-	authact "github.com/runforyou-ai/lite-ai-gateway/internal/actions/auth"
-	"github.com/runforyou-ai/lite-ai-gateway/internal/auth"
-	"github.com/runforyou-ai/lite-ai-gateway/internal/domain"
-	"github.com/runforyou-ai/lite-ai-gateway/internal/model"
-	"github.com/runforyou-ai/lite-ai-gateway/internal/sysdoc"
+	authact "github.com/runforyou-ai/ai-gateway/internal/actions/auth"
+	"github.com/runforyou-ai/ai-gateway/internal/auth"
+	"github.com/runforyou-ai/ai-gateway/internal/domain"
+	"github.com/runforyou-ai/ai-gateway/internal/model"
+	"github.com/runforyou-ai/ai-gateway/internal/sysdoc"
 )
 
 func TestRegisterFirstUserIsAdmin(t *testing.T) {

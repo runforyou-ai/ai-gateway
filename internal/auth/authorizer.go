@@ -6,8 +6,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/runforyou-ai/lite-ai-gateway/internal/domain"
-	"github.com/runforyou-ai/lite-ai-gateway/internal/model"
+	"github.com/runforyou-ai/ai-gateway/internal/domain"
+	"github.com/runforyou-ai/ai-gateway/internal/model"
 	"github.com/uptrace/bun"
 )
 

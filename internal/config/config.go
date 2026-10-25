@@ -19,9 +19,9 @@ const (
 	// EnvProduction 生产环境（影响日志等默认路径）。
 	EnvProduction = "production"
 
-	appDirName = "lite-ai-gateway"
+	appDirName = "ai-gateway"
 	configName = "config.yaml"
-	pidName    = "lite-ai-gateway.pid"
+	pidName    = "ai-gateway.pid"
 	dotEnvName = ".env"
 )
 
@@ -30,8 +30,7 @@ type Config struct {
 	Env      string         `yaml:"env"`
 	Server   ServerConfig   `yaml:"server"`
 	Postgres PostgresConfig `yaml:"postgres"`
-	NATS     NATSConfig     `yaml:"nats"`
-	Log LogConfig `yaml:"log"`
+	Log      LogConfig      `yaml:"log"`
 }
 
 // ServerConfig 是 HTTP 服务配置。
@@ -51,11 +50,6 @@ type PostgresConfig struct {
 	SSLMode  string `yaml:"sslmode"`
 }
 
-// NATSConfig 是 NATS 连接；URL 为空时嵌入 nats-server。
-type NATSConfig struct {
-	URL string `yaml:"url"`
-}
-
 // LogConfig 是日志目录；Dir 为空时按 env 使用默认路径。
 type LogConfig struct {
 	Dir string `yaml:"dir"`
@@ -73,13 +67,12 @@ func Default() Config {
 		Postgres: PostgresConfig{
 			Host:     "127.0.0.1",
 			Port:     5432,
-			User:     "lite-ai-gateway",
-			Password: "lite-ai-gateway",
-			Database: "lite-ai-gateway",
+			User:     "ai-gateway",
+			Password: "ai-gateway",
+			Database: "ai-gateway",
 			SSLMode:  "disable",
 		},
-		NATS: NATSConfig{},
-		Log:  LogConfig{},
+		Log: LogConfig{},
 	}
 }
 
@@ -249,9 +242,6 @@ func applyEnvMap(cfg *Config, env map[string]string) {
 	}
 	if v := env["POSTGRES_SSLMODE"]; v != "" {
 		cfg.Postgres.SSLMode = v
-	}
-	if v := env["NATS_URL"]; v != "" {
-		cfg.NATS.URL = v
 	}
 	if v := env["LOG_DIR"]; v != "" {
 		cfg.Log.Dir = v

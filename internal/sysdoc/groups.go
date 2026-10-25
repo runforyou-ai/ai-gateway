@@ -19,7 +19,7 @@ type Site struct {
 // DefaultSite 返回安装时的站点默认值。
 func DefaultSite() Site {
 	return Site{
-		Name:             "Lite AI Gateway",
+		Name:             "AI Gateway",
 		RegistrationOpen: false,
 	}
 }

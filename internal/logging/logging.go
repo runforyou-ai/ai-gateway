@@ -31,7 +31,7 @@ func Setup(opts Options) (func() error, error) {
 	}
 
 	fileWriter, err := filex.OpenRotating(
-		filepath.Join(opts.Dir, "lite-ai-gateway.log"),
+		filepath.Join(opts.Dir, "ai-gateway.log"),
 		int64(opts.MaxSizeMB)*1024*1024,
 		opts.MaxBackups,
 	)

@@ -5,8 +5,8 @@ package api
 import (
 	"net/http"
 
-	"github.com/runforyou-ai/lite-ai-gateway/internal/contract"
-	"github.com/runforyou-ai/lite-ai-gateway/internal/direct"
+	"github.com/runforyou-ai/ai-gateway/internal/contract"
+	"github.com/runforyou-ai/ai-gateway/internal/direct"
 )
 
 // registerGeneratedRoutes 注册契约生成的 /api 路由。

@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/runforyou-ai/lite-ai-gateway/internal/auth"
-	"github.com/runforyou-ai/lite-ai-gateway/internal/domain"
-	"github.com/runforyou-ai/lite-ai-gateway/internal/model"
+	"github.com/runforyou-ai/ai-gateway/internal/auth"
+	"github.com/runforyou-ai/ai-gateway/internal/domain"
+	"github.com/runforyou-ai/ai-gateway/internal/model"
 	"github.com/uptrace/bun"
 )
 

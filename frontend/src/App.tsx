@@ -117,7 +117,7 @@ function App() {
                 warnWhenUnsavedChanges: true,
                 projectId: "V6ZxvK-SG6KKs-ZwwEIB",
                 title: {
-                  text: "Lite AI Gateway",
+                  text: "AI Gateway",
                 },
               }}
             >
