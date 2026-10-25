@@ -1,6 +1,7 @@
 import type { AuthProvider } from "@refinedev/core"
 import { ApiError } from "@/api/client"
 import { register as registerAccount } from "@/api/generated/operations"
+import { requestPasswordReset, resetPassword } from "@/api/password"
 import { login, logout, me } from "@/api/session"
 
 export const authProvider: AuthProvider = {
@@ -38,6 +39,25 @@ export const authProvider: AuthProvider = {
       // ignore
     }
     return { success: true, redirectTo: "/" }
+  },
+  forgotPassword: async ({ email }) => {
+    await requestPasswordReset({ email: String(email ?? "") })
+    return { success: true }
+  },
+  updatePassword: async ({ password }) => {
+    const token =
+      new URLSearchParams(window.location.search).get("token")?.trim() ?? ""
+    if (!token) {
+      return {
+        success: false,
+        error: {
+          name: "ResetPasswordError",
+          message: "missing token",
+        },
+      }
+    }
+    await resetPassword({ token, password: String(password ?? "") })
+    return { success: true, redirectTo: "/login" }
   },
   check: async () => {
     try {

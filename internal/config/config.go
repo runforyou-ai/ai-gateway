@@ -31,6 +31,23 @@ type Config struct {
 	Server   ServerConfig   `yaml:"server"`
 	Postgres PostgresConfig `yaml:"postgres"`
 	Log      LogConfig      `yaml:"log"`
+	Email    EmailConfig    `yaml:"email"`
+}
+
+// EmailConfig 是发信部署配置；仅支持 Resend。未配齐时发信不可用。
+type EmailConfig struct {
+	From   string       `yaml:"from"`
+	Resend ResendConfig `yaml:"resend"`
+}
+
+// ResendConfig 是 Resend 渠道凭证。
+type ResendConfig struct {
+	APIKey string `yaml:"api_key"`
+}
+
+// Configured 表示 from 与 Resend API Key 均已设置。
+func (c EmailConfig) Configured() bool {
+	return strings.TrimSpace(c.From) != "" && strings.TrimSpace(c.Resend.APIKey) != ""
 }
 
 // ServerConfig 是 HTTP 服务配置。
@@ -245,5 +262,11 @@ func applyEnvMap(cfg *Config, env map[string]string) {
 	}
 	if v := env["LOG_DIR"]; v != "" {
 		cfg.Log.Dir = v
+	}
+	if v := env["EMAIL_FROM"]; v != "" {
+		cfg.Email.From = v
+	}
+	if v := env["EMAIL_RESEND_API_KEY"]; v != "" {
+		cfg.Email.Resend.APIKey = v
 	}
 }

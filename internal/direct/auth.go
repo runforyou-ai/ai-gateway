@@ -43,7 +43,7 @@ func GetAuthorizer() Authorizer {
 	return authorizer
 }
 
-func authorize(ctx context.Context, meta contract.RequestMeta, mode string) error {
+func authorize(ctx context.Context, meta *contract.RequestMeta, mode string) error {
 	switch mode {
 	case "public":
 		return nil
@@ -58,6 +58,8 @@ func authorize(ctx context.Context, meta contract.RequestMeta, mode string) erro
 		if mode == "admin" && principal.Role != domain.RoleAdmin {
 			return ErrForbidden
 		}
+		meta.ActorUserID = principal.UserID
+		meta.ActorRole = string(principal.Role)
 		return nil
 	default:
 		return ErrUnauthorized

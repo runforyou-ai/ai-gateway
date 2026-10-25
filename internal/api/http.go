@@ -15,6 +15,7 @@ func requestMeta(r *http.Request) contract.RequestMeta {
 	return contract.RequestMeta{
 		Cookie:     r.Header.Get("Cookie"),
 		RemoteAddr: r.RemoteAddr,
+		Query:      r.URL.RawQuery,
 	}
 }
 

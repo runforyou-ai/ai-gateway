@@ -1,4 +1,9 @@
-import { Authenticated, Refine, type I18nProvider } from "@refinedev/core";
+import {
+  Authenticated,
+  CanAccess,
+  Refine,
+  type I18nProvider,
+} from "@refinedev/core";
 import { DevtoolsPanel, DevtoolsProvider } from "@refinedev/devtools";
 import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
 import {
@@ -7,6 +12,7 @@ import {
   LayoutDashboard,
   Server,
   Settings,
+  Users,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -22,6 +28,7 @@ import routerProvider, {
   DocumentTitleHandler,
   UnsavedChangesNotifier,
 } from "@refinedev/react-router";
+import { accessControlProvider } from "./providers/access-control";
 import { dataProvider } from "./providers/data";
 import { authProvider } from "./providers/auth";
 import { useNotificationProvider } from "./components/refine-ui/notification/use-notification-provider";
@@ -33,8 +40,14 @@ import { DashboardPage } from "./pages/dashboard";
 import { PlaceholderListPage } from "./pages/placeholder-list";
 import { ProfilePage } from "./pages/profile";
 import { SettingsPage } from "./pages/settings";
+import { AcceptInvitePage } from "./pages/accept-invite";
+import { ForgotPasswordPage } from "./pages/forgot-password";
+import { ResetPasswordPage } from "./pages/reset-password";
 import { SignInPage } from "./pages/sign-in";
 import { SignUpPage } from "./pages/sign-up";
+import { UserCreatePage } from "./pages/users/create";
+import { UserEditPage } from "./pages/users/edit";
+import { UserListPage } from "./pages/users/list";
 import { WelcomePage } from "./pages/welcome";
 import "./i18n";
 import "./App.css";
@@ -59,6 +72,7 @@ function App() {
             <Refine
               dataProvider={dataProvider}
               authProvider={authProvider}
+              accessControlProvider={accessControlProvider}
               i18nProvider={i18nProvider}
               notificationProvider={useNotificationProvider()}
               routerProvider={routerProvider}
@@ -69,6 +83,16 @@ function App() {
                   meta: {
                     label: t("resources.dashboard"),
                     icon: <LayoutDashboard className="h-4 w-4" />,
+                  },
+                },
+                {
+                  name: "users",
+                  list: `${CONSOLE_PREFIX}/users`,
+                  create: `${CONSOLE_PREFIX}/users/create`,
+                  edit: `${CONSOLE_PREFIX}/users/edit/:id`,
+                  meta: {
+                    label: t("resources.users"),
+                    icon: <Users className="h-4 w-4" />,
                   },
                 },
                 {
@@ -125,6 +149,9 @@ function App() {
                 <Route index element={<WelcomePage />} />
                 <Route path="/login" element={<SignInPage />} />
                 <Route path="/register" element={<SignUpPage />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
+                <Route path="/accept-invite" element={<AcceptInvitePage />} />
                 <Route
                   path={CONSOLE_PREFIX}
                   element={
@@ -139,10 +166,37 @@ function App() {
                   }
                 >
                   <Route index element={<DashboardPage />} />
+                  <Route
+                    path="users"
+                    element={
+                      <CanAccess
+                        resource="users"
+                        action="list"
+                        fallback={<Navigate to={CONSOLE_PREFIX} replace />}
+                      >
+                        <Outlet />
+                      </CanAccess>
+                    }
+                  >
+                    <Route index element={<UserListPage />} />
+                    <Route path="create" element={<UserCreatePage />} />
+                    <Route path="edit/:id" element={<UserEditPage />} />
+                  </Route>
                   <Route path="models" element={<PlaceholderListPage />} />
                   <Route path="providers" element={<PlaceholderListPage />} />
                   <Route path="api-keys" element={<PlaceholderListPage />} />
-                  <Route path="settings" element={<SettingsPage />} />
+                  <Route
+                    path="settings"
+                    element={
+                      <CanAccess
+                        resource="settings"
+                        action="list"
+                        fallback={<Navigate to={CONSOLE_PREFIX} replace />}
+                      >
+                        <SettingsPage />
+                      </CanAccess>
+                    }
+                  />
                   <Route path="profile" element={<ProfilePage />} />
                   <Route path="*" element={<ErrorComponent />} />
                 </Route>

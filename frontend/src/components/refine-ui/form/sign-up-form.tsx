@@ -24,7 +24,11 @@ import { Separator } from "@/components/ui/separator";
 import { InputPassword } from "@/components/refine-ui/form/input-password";
 import { cn } from "@/lib/utils";
 
-export const SignUpForm = () => {
+type SignUpFormProps = {
+  firstInstall?: boolean;
+};
+
+export const SignUpForm = ({ firstInstall = false }: SignUpFormProps) => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -92,7 +96,11 @@ export const SignUpForm = () => {
           <CardDescription
             className={cn("text-muted-foreground", "font-medium")}
           >
-            {translate("pages.register.description")}
+            {translate(
+              firstInstall
+                ? "pages.register.descriptionFirst"
+                : "pages.register.description",
+            )}
           </CardDescription>
         </CardHeader>
 

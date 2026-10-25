@@ -55,7 +55,7 @@ jobs:
 
       - name: Check generated contract artifacts
         run: |
-          make generate
+          go generate ./internal/contract
           git diff --exit-code
 
       - name: Go vet and test

@@ -15,7 +15,7 @@ type Backend struct {
 
 // Health 返回服务健康状态。
 func (b *Backend) Health(ctx context.Context, meta contract.RequestMeta) (contract.HealthStatus, error) {
-	if err := authorize(ctx, meta, "public"); err != nil {
+	if err := authorize(ctx, &meta, "public"); err != nil {
 		var zero contract.HealthStatus
 		return zero, err
 	}
@@ -24,7 +24,7 @@ func (b *Backend) Health(ctx context.Context, meta contract.RequestMeta) (contra
 
 // InstallationStatus 返回是否已有账号及站点名。
 func (b *Backend) InstallationStatus(ctx context.Context, meta contract.RequestMeta) (contract.InstallationStatus, error) {
-	if err := authorize(ctx, meta, "public"); err != nil {
+	if err := authorize(ctx, &meta, "public"); err != nil {
 		var zero contract.InstallationStatus
 		return zero, err
 	}
@@ -33,9 +33,97 @@ func (b *Backend) InstallationStatus(ctx context.Context, meta contract.RequestM
 
 // Register 注册账号；第一个用户为 admin，其后为 user（需开放注册）。
 func (b *Backend) Register(ctx context.Context, meta contract.RequestMeta, input contract.RegisterInput) (contract.RegisterResult, error) {
-	if err := authorize(ctx, meta, "public"); err != nil {
+	if err := authorize(ctx, &meta, "public"); err != nil {
 		var zero contract.RegisterResult
 		return zero, err
 	}
 	return b.Impl.Register(ctx, meta, input)
+}
+
+// ListUsers 分页列出用户（查询参数 _start、_end）。
+func (b *Backend) ListUsers(ctx context.Context, meta contract.RequestMeta) (contract.UserList, error) {
+	if err := authorize(ctx, &meta, "admin"); err != nil {
+		var zero contract.UserList
+		return zero, err
+	}
+	return b.Impl.ListUsers(ctx, meta)
+}
+
+// GetUser 获取单个用户。
+func (b *Backend) GetUser(ctx context.Context, meta contract.RequestMeta, input contract.UserIDInput) (contract.User, error) {
+	if err := authorize(ctx, &meta, "admin"); err != nil {
+		var zero contract.User
+		return zero, err
+	}
+	return b.Impl.GetUser(ctx, meta, input)
+}
+
+// CreateUser 创建用户。
+func (b *Backend) CreateUser(ctx context.Context, meta contract.RequestMeta, input contract.UserCreateInput) (contract.User, error) {
+	if err := authorize(ctx, &meta, "admin"); err != nil {
+		var zero contract.User
+		return zero, err
+	}
+	return b.Impl.CreateUser(ctx, meta, input)
+}
+
+// UpdateUser 更新用户；password 为空不改密。
+func (b *Backend) UpdateUser(ctx context.Context, meta contract.RequestMeta, input contract.UserUpdateInput) (contract.User, error) {
+	if err := authorize(ctx, &meta, "admin"); err != nil {
+		var zero contract.User
+		return zero, err
+	}
+	return b.Impl.UpdateUser(ctx, meta, input)
+}
+
+// DeleteUser 删除用户。
+func (b *Backend) DeleteUser(ctx context.Context, meta contract.RequestMeta, input contract.UserIDInput) error {
+	if err := authorize(ctx, &meta, "admin"); err != nil {
+		return err
+	}
+	return b.Impl.DeleteUser(ctx, meta, input)
+}
+
+// InviteUser 邀请用户注册（发信）。
+func (b *Backend) InviteUser(ctx context.Context, meta contract.RequestMeta, input contract.InviteUserInput) error {
+	if err := authorize(ctx, &meta, "admin"); err != nil {
+		return err
+	}
+	return b.Impl.InviteUser(ctx, meta, input)
+}
+
+// LookupInvite 按令牌查询未使用邀请。
+func (b *Backend) LookupInvite(ctx context.Context, meta contract.RequestMeta, input contract.InviteTokenInput) (contract.InviteLookup, error) {
+	if err := authorize(ctx, &meta, "public"); err != nil {
+		var zero contract.InviteLookup
+		return zero, err
+	}
+	return b.Impl.LookupInvite(ctx, meta, input)
+}
+
+// AcceptInvite 接受邀请并创建账号。
+func (b *Backend) AcceptInvite(ctx context.Context, meta contract.RequestMeta, input contract.AcceptInviteInput) (contract.User, error) {
+	if err := authorize(ctx, &meta, "public"); err != nil {
+		var zero contract.User
+		return zero, err
+	}
+	return b.Impl.AcceptInvite(ctx, meta, input)
+}
+
+// GetSiteSettings 读取站点设置。
+func (b *Backend) GetSiteSettings(ctx context.Context, meta contract.RequestMeta) (contract.SiteSettings, error) {
+	if err := authorize(ctx, &meta, "admin"); err != nil {
+		var zero contract.SiteSettings
+		return zero, err
+	}
+	return b.Impl.GetSiteSettings(ctx, meta)
+}
+
+// UpdateSiteSettings 更新站点设置。
+func (b *Backend) UpdateSiteSettings(ctx context.Context, meta contract.RequestMeta, input contract.SiteSettings) (contract.SiteSettings, error) {
+	if err := authorize(ctx, &meta, "admin"); err != nil {
+		var zero contract.SiteSettings
+		return zero, err
+	}
+	return b.Impl.UpdateSiteSettings(ctx, meta, input)
 }

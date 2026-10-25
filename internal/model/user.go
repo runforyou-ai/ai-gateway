@@ -18,4 +18,5 @@ type User struct {
 	Email     string      `bun:"email,notnull"`
 	Password  string      `bun:"password,notnull"`
 	Role      domain.Role `bun:"role,notnull"`
+	Disabled  bool        `bun:"disabled,notnull,default:false"`
 }

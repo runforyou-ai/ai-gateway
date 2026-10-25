@@ -29,6 +29,10 @@ type EditViewHeaderProps = PropsWithChildren<{
   wrapperClassName?: string;
   headerClassName?: string;
   actionsSlot?: React.ReactNode;
+  /** @default true */
+  withBackButton?: boolean;
+  /** @default true */
+  withRefreshButton?: boolean;
 }>;
 
 export const EditViewHeader = ({
@@ -37,6 +41,8 @@ export const EditViewHeader = ({
   actionsSlot,
   wrapperClassName,
   headerClassName,
+  withBackButton = true,
+  withRefreshButton = true,
 }: EditViewHeaderProps) => {
   const back = useBack();
 
@@ -56,6 +62,8 @@ export const EditViewHeader = ({
       "plural"
     );
 
+  const showActions = Boolean(actionsSlot) || withRefreshButton;
+
   return (
     <div className={cn("flex flex-col", "gap-4", wrapperClassName)}>
       <div className="flex items-center relative gap-2">
@@ -70,25 +78,31 @@ export const EditViewHeader = ({
           "gap-1",
           "items-center",
           "justify-between",
-          "-ml-2.5",
+          withBackButton && "-ml-2.5",
           headerClassName
         )}
       >
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" onClick={back}>
-            <ArrowLeftIcon className="h-4 w-4" />
-          </Button>
+          {withBackButton ? (
+            <Button variant="ghost" size="icon" onClick={back}>
+              <ArrowLeftIcon className="h-4 w-4" />
+            </Button>
+          ) : null}
           <h2 className="text-2xl font-bold">{title}</h2>
         </div>
 
-        <div className="flex items-center gap-2">
-          {actionsSlot}
-          <RefreshButton
-            variant="outline"
-            recordItemId={recordItemId}
-            resource={resourceName}
-          />
-        </div>
+        {showActions ? (
+          <div className="flex items-center gap-2">
+            {actionsSlot}
+            {withRefreshButton ? (
+              <RefreshButton
+                variant="outline"
+                recordItemId={recordItemId}
+                resource={resourceName}
+              />
+            ) : null}
+          </div>
+        ) : null}
       </div>
     </div>
   );

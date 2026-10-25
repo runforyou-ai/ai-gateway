@@ -16,6 +16,8 @@ import (
 var (
 	// ErrInvalidCredentials 表示邮箱或密码错误。
 	ErrInvalidCredentials = errors.New("invalid credentials")
+	// ErrAccountDisabled 表示账号已禁用。
+	ErrAccountDisabled = errors.New("account disabled")
 )
 
 // LoginInput 是登录参数。
@@ -56,6 +58,9 @@ func Login(ctx context.Context, db *bun.DB, in LoginInput) (LoginResult, error) 
 	}
 	if !auth.CheckPassword(user.Password, in.Password) {
 		return LoginResult{}, ErrInvalidCredentials
+	}
+	if user.Disabled {
+		return LoginResult{}, ErrAccountDisabled
 	}
 
 	token, tokenHash := auth.NewSessionToken()

@@ -12,3 +12,7 @@ postgres:
   sslmode: disable
 log:
   dir: /var/log/ai-gateway
+email:
+  from: ""
+  resend:
+    api_key: ""

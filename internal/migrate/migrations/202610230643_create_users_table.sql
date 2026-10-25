@@ -6,7 +6,8 @@ CREATE TABLE users (
     name          text NOT NULL,
     email         text NOT NULL,
     password      text NOT NULL,
-    role          text NOT NULL
+    role          text NOT NULL,
+    disabled      boolean NOT NULL DEFAULT false
 );
 
 CREATE UNIQUE INDEX users_email_unique ON users (lower(email));
@@ -23,6 +24,7 @@ COMMENT ON COLUMN users.name IS '用户名（展示用）';
 COMMENT ON COLUMN users.email IS '登录邮箱';
 COMMENT ON COLUMN users.password IS '密码哈希';
 COMMENT ON COLUMN users.role IS '角色：admin 或 user';
+COMMENT ON COLUMN users.disabled IS '是否禁用；禁用后不可登录';
 
 -- +goose Down
 DROP TABLE IF EXISTS users;

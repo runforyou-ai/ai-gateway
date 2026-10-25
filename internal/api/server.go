@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/runforyou-ai/ai-gateway/internal/direct"
+	"github.com/runforyou-ai/ai-gateway/internal/email"
 	"github.com/runforyou-ai/ai-gateway/internal/web"
 	"github.com/uptrace/bun"
 )
@@ -14,6 +15,8 @@ import (
 type MuxOptions struct {
 	DB           *bun.DB
 	CookieSecure bool
+	Mailer       email.Sender
+	PublicURL    string
 }
 
 // NewMux 组装 /api、/v1 与嵌入前端。
@@ -25,6 +28,7 @@ func NewMux(backend *direct.Backend, opts MuxOptions) http.Handler {
 	registerGeneratedRoutes(mux, backend)
 	if opts.DB != nil {
 		registerSessionRoutes(mux, opts.DB, opts.CookieSecure)
+		registerPasswordRoutes(mux, opts.DB, opts.Mailer, opts.PublicURL)
 	}
 	registerV1Routes(mux)
 	mux.Handle("/", spaHandler())

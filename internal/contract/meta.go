@@ -8,6 +8,12 @@ type RequestMeta struct {
 	Cookie string
 	// RemoteAddr 是客户端地址。
 	RemoteAddr string
+	// Query 是 URL 原始查询串（不含 ?）。
+	Query string
+	// ActorUserID 由鉴权填充；未认证时为 0。
+	ActorUserID int64
+	// ActorRole 由鉴权填充；未认证时为空。
+	ActorRole string
 }
 
 type metaKey struct{}
