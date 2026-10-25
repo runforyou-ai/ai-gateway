@@ -7,13 +7,17 @@ import (
 
 	actionauth "github.com/runforyou-ai/ai-gateway/internal/actions/auth"
 	"github.com/runforyou-ai/ai-gateway/internal/actions/installation"
+	"github.com/runforyou-ai/ai-gateway/internal/actions/settings"
 	"github.com/runforyou-ai/ai-gateway/internal/contract"
+	"github.com/runforyou-ai/ai-gateway/internal/email"
 	"github.com/uptrace/bun"
 )
 
 // Ops 是手写业务实现，供生成的 Backend 分发调用。
 type Ops struct {
-	DB *bun.DB
+	DB        *bun.DB
+	Mailer    email.Sender
+	PublicURL string
 }
 
 // Health 返回健康状态。
@@ -23,11 +27,15 @@ func (o *Ops) Health(context.Context, contract.RequestMeta) (contract.HealthStat
 
 // InstallationStatus 返回安装状态。
 func (o *Ops) InstallationStatus(ctx context.Context, _ contract.RequestMeta) (contract.InstallationStatus, error) {
-	installed, siteName, err := installation.Status(ctx, o.DB)
+	installed, siteName, registrationOpen, err := installation.Status(ctx, o.DB)
 	if err != nil {
 		return contract.InstallationStatus{}, err
 	}
-	return contract.InstallationStatus{Installed: installed, SiteName: siteName}, nil
+	return contract.InstallationStatus{
+		Installed:        installed,
+		SiteName:         siteName,
+		RegistrationOpen: registrationOpen,
+	}, nil
 }
 
 // Register 注册账号。
@@ -70,7 +78,34 @@ func (o *Ops) Register(ctx context.Context, _ contract.RequestMeta, input contra
 	return contract.RegisterResult{Role: string(out.Role)}, nil
 }
 
+// GetSiteSettings 读取站点设置。
+func (o *Ops) GetSiteSettings(ctx context.Context, _ contract.RequestMeta) (contract.SiteSettings, error) {
+	site, err := settings.GetSite(ctx, o.DB)
+	if err != nil {
+		return contract.SiteSettings{}, err
+	}
+	return contract.SiteSettings{Name: site.Name, RegistrationOpen: site.RegistrationOpen}, nil
+}
+
+// UpdateSiteSettings 更新站点设置。
+func (o *Ops) UpdateSiteSettings(ctx context.Context, _ contract.RequestMeta, input contract.SiteSettings) (contract.SiteSettings, error) {
+	site, err := settings.UpdateSite(ctx, o.DB, settings.Site{
+		Name:             input.Name,
+		RegistrationOpen: input.RegistrationOpen,
+	})
+	if err != nil {
+		if errors.Is(err, settings.ErrInvalidName) {
+			return contract.SiteSettings{}, &APIError{
+				Status: http.StatusUnprocessableEntity, Message: "invalid name",
+				Fields: map[string]string{"name": "invalid"},
+			}
+		}
+		return contract.SiteSettings{}, err
+	}
+	return contract.SiteSettings{Name: site.Name, RegistrationOpen: site.RegistrationOpen}, nil
+}
+
 // NewBackend 组装生成分发层与手写实现。
-func NewBackend(db *bun.DB) *Backend {
-	return &Backend{Impl: &Ops{DB: db}}
+func NewBackend(db *bun.DB, mailer email.Sender, publicURL string) *Backend {
+	return &Backend{Impl: &Ops{DB: db, Mailer: mailer, PublicURL: publicURL}}
 }

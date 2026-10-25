@@ -1,6 +1,18 @@
 import type { DataProvider, HttpError } from "@refinedev/core"
 import { createSimpleRestDataProvider } from "@refinedev/rest/simple-rest"
-import { ApiError } from "@/api/client"
+import { call, ApiError } from "@/api/client"
+import type {
+  User,
+  UserCreateInput,
+  UserList,
+  UserUpdateInput,
+} from "@/api/generated/contract"
+import {
+  createUser,
+  deleteUser,
+  getUser,
+  updateUser,
+} from "@/api/generated/operations"
 import { me, updateProfile, type UpdateProfileInput } from "@/api/session"
 import { API_URL } from "./constants"
 
@@ -28,7 +40,25 @@ function toHttpError(error: unknown): HttpError {
 
 export const dataProvider = {
   ...restProvider,
-  getOne: async (params: Parameters<NonNullable<DataProvider["getOne"]>>[0]) => {
+  getList: async (params) => {
+    if (params.resource === "users") {
+      try {
+        const currentPage = params.pagination?.currentPage ?? 1
+        const pageSize = params.pagination?.pageSize ?? 10
+        const start = (currentPage - 1) * pageSize
+        const end = start + pageSize
+        const list = await call<UserList>({
+          method: "GET",
+          path: `/api/users?_start=${start}&_end=${end}`,
+        })
+        return { data: list.items, total: list.total }
+      } catch (error) {
+        return Promise.reject(toHttpError(error))
+      }
+    }
+    return restProvider.getList!(params)
+  },
+  getOne: async (params) => {
     if (params.resource === "profile") {
       try {
         return { data: await me() }
@@ -36,11 +66,28 @@ export const dataProvider = {
         return Promise.reject(toHttpError(error))
       }
     }
+    if (params.resource === "users") {
+      try {
+        return { data: await getUser({ id: Number(params.id) }) }
+      } catch (error) {
+        return Promise.reject(toHttpError(error))
+      }
+    }
     return restProvider.getOne!(params)
   },
-  update: async (
-    params: Parameters<NonNullable<DataProvider["update"]>>[0]
-  ) => {
+  create: async (params) => {
+    if (params.resource === "users") {
+      try {
+        const input = params.variables as UserCreateInput
+        const data = await createUser(input)
+        return { data }
+      } catch (error) {
+        return Promise.reject(toHttpError(error))
+      }
+    }
+    return restProvider.create!(params)
+  },
+  update: async (params) => {
     if (params.resource === "profile") {
       try {
         const input = params.variables as UpdateProfileInput
@@ -56,7 +103,34 @@ export const dataProvider = {
         return Promise.reject(toHttpError(error))
       }
     }
+    if (params.resource === "users") {
+      try {
+        const input = params.variables as Omit<UserUpdateInput, "id">
+        const data = await updateUser({
+          id: Number(params.id),
+          name: input.name,
+          email: input.email,
+          password: input.password ?? "",
+          role: input.role,
+          disabled: Boolean(input.disabled),
+        })
+        return { data }
+      } catch (error) {
+        return Promise.reject(toHttpError(error))
+      }
+    }
     return restProvider.update!(params)
+  },
+  deleteOne: async (params) => {
+    if (params.resource === "users") {
+      try {
+        await deleteUser({ id: Number(params.id) })
+        return { data: { id: Number(params.id) } as User }
+      } catch (error) {
+        return Promise.reject(toHttpError(error))
+      }
+    }
+    return restProvider.deleteOne!(params)
   },
 } as DataProvider
 

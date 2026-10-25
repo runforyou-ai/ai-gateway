@@ -40,6 +40,10 @@ func (a *SessionAuthorizer) Authenticate(ctx context.Context, cookieHeader strin
 	if err := a.DB.NewSelect().Model(&user).Where("id = ?", sess.UserID).Scan(ctx); err != nil {
 		return Principal{}, err
 	}
+	if user.Disabled {
+		_, _ = a.DB.NewDelete().Model((*model.Session)(nil)).Where("user_id = ?", user.ID).Exec(ctx)
+		return Principal{}, errors.New("account disabled")
+	}
 	if !user.Role.Valid() {
 		return Principal{}, errors.New("invalid role")
 	}

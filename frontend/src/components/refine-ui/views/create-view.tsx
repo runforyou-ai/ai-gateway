@@ -27,6 +27,8 @@ type CreateHeaderProps = PropsWithChildren<{
   title?: string;
   wrapperClassName?: string;
   headerClassName?: string;
+  /** @default true */
+  withBackButton?: boolean;
 }>;
 
 export const CreateViewHeader = ({
@@ -34,6 +36,7 @@ export const CreateViewHeader = ({
   title: titleFromProps,
   wrapperClassName,
   headerClassName,
+  withBackButton = true,
 }: CreateHeaderProps) => {
   const back = useBack();
 
@@ -63,13 +66,15 @@ export const CreateViewHeader = ({
           "flex",
           "gap-1",
           "items-center",
-          "-ml-2.5",
+          withBackButton && "-ml-2.5",
           headerClassName
         )}
       >
-        <Button variant="ghost" size="icon" onClick={back}>
-          <ArrowLeftIcon className="h-4 w-4" />
-        </Button>
+        {withBackButton ? (
+          <Button variant="ghost" size="icon" onClick={back}>
+            <ArrowLeftIcon className="h-4 w-4" />
+          </Button>
+        ) : null}
         <h2 className="text-2xl font-bold">{title}</h2>
       </div>
     </div>

@@ -2,6 +2,7 @@
 
 import React from "react";
 import {
+  useCan,
   useLink,
   useMenu,
   useRefineOptions,
@@ -74,6 +75,18 @@ type MenuItemProps = {
 
 function SidebarItem({ item, selectedKey }: MenuItemProps) {
   const { open } = useShadcnSidebar();
+  const isLeaf = !item.meta?.group && !(item.children && item.children.length > 0);
+  const { data: access, isFetched } = useCan({
+    resource: item.name,
+    action: "list",
+    queryOptions: { enabled: isLeaf },
+  });
+
+  if (isLeaf) {
+    if (!isFetched || access?.can === false) {
+      return null;
+    }
+  }
 
   if (item.meta?.group) {
     return <SidebarItemGroup item={item} selectedKey={selectedKey} />;
@@ -169,7 +182,6 @@ function SidebarItemCollapsible({ item, selectedKey }: MenuItemProps) {
 
 function SidebarItemDropdown({ item, selectedKey }: MenuItemProps) {
   const { children } = item;
-  const Link = useLink();
 
   return (
     <DropdownMenu>
@@ -177,29 +189,44 @@ function SidebarItemDropdown({ item, selectedKey }: MenuItemProps) {
         <SidebarButton item={item} />
       </DropdownMenuTrigger>
       <DropdownMenuContent side="right" align="start">
-        {children?.map((child: TreeMenuItem) => {
-          const { key: childKey } = child;
-          const isSelected = childKey === selectedKey;
-
-          return (
-            <DropdownMenuItem key={childKey || child.name} asChild>
-              <Link
-                to={child.route || ""}
-                className={cn("flex w-full items-center gap-2", {
-                  "bg-accent text-accent-foreground": isSelected,
-                })}
-              >
-                <ItemIcon
-                  icon={child.meta?.icon ?? child.icon}
-                  isSelected={isSelected}
-                />
-                <span>{getDisplayName(child)}</span>
-              </Link>
-            </DropdownMenuItem>
-          );
-        })}
+        {children?.map((child: TreeMenuItem) => (
+          <SidebarDropdownItem
+            key={child.key || child.name}
+            item={child}
+            selectedKey={selectedKey}
+          />
+        ))}
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+function SidebarDropdownItem({ item, selectedKey }: MenuItemProps) {
+  const Link = useLink();
+  const { data: access, isFetched } = useCan({
+    resource: item.name,
+    action: "list",
+  });
+  if (!isFetched || access?.can === false) {
+    return null;
+  }
+
+  const isSelected = item.key === selectedKey;
+  return (
+    <DropdownMenuItem asChild>
+      <Link
+        to={item.route || ""}
+        className={cn("flex w-full items-center gap-2", {
+          "bg-accent text-accent-foreground": isSelected,
+        })}
+      >
+        <ItemIcon
+          icon={item.meta?.icon ?? item.icon}
+          isSelected={isSelected}
+        />
+        <span>{getDisplayName(item)}</span>
+      </Link>
+    </DropdownMenuItem>
   );
 }
 

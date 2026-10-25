@@ -1,39 +1,24 @@
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { useNavigate } from "react-router"
-import { installationStatus } from "@/api/generated/operations"
+import { AuthPageLoading } from "@/components/auth-page-loading"
 import { SignInForm } from "@/components/refine-ui/form/sign-in-form"
+import { useInstallationStatus } from "@/hooks/use-installation-status"
 
 /** 官方 SignInForm 入口；无用户时跳转注册。 */
 export function SignInPage() {
   const navigate = useNavigate()
-  const [ready, setReady] = useState(false)
+  const { status, ready } = useInstallationStatus()
 
   useEffect(() => {
-    let cancelled = false
-    installationStatus()
-      .then((status) => {
-        if (cancelled) return
-        if (!status.installed) {
-          navigate("/register", { replace: true })
-          return
-        }
-        setReady(true)
-      })
-      .catch(() => {
-        if (!cancelled) setReady(true)
-      })
-    return () => {
-      cancelled = true
+    if (!ready || !status) return
+    if (!status.installed) {
+      navigate("/register", { replace: true })
     }
-  }, [navigate])
+  }, [navigate, ready, status])
 
-  if (!ready) {
-    return (
-      <div className="flex min-h-svh items-center justify-center p-8 text-sm text-muted-foreground">
-        Loading…
-      </div>
-    )
+  if (!ready || !status || !status.installed) {
+    return <AuthPageLoading />
   }
 
-  return <SignInForm />
+  return <SignInForm showSignUp={status.registrationOpen} />
 }

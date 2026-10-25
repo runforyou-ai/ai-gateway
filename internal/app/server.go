@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log/slog"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -17,6 +18,7 @@ import (
 	"github.com/runforyou-ai/ai-gateway/internal/auth"
 	"github.com/runforyou-ai/ai-gateway/internal/config"
 	"github.com/runforyou-ai/ai-gateway/internal/direct"
+	"github.com/runforyou-ai/ai-gateway/internal/email"
 	"github.com/runforyou-ai/ai-gateway/internal/logging"
 	"github.com/runforyou-ai/ai-gateway/internal/migrate"
 	"github.com/runforyou-ai/ai-gateway/internal/process"
@@ -39,16 +41,17 @@ func Run(cfgPath, pidPath string) error {
 	if err != nil {
 		return err
 	}
+	if pid, err := process.RunningPID(pidPath); err != nil {
+		return err
+	} else if pid > 0 {
+		return fmt.Errorf("already running (pid %d); stop it first", pid)
+	}
+
 	closeLog, err := logging.Setup(logging.Options{Dir: cfg.LogDir()})
 	if err != nil {
 		return err
 	}
 	defer func() { _ = closeLog() }()
-
-	if err := process.WritePID(pidPath); err != nil {
-		return fmt.Errorf("write pid: %w", err)
-	}
-	defer func() { _ = process.RemovePID(pidPath) }()
 
 	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(cfg.PostgresDSN())))
 	sqldb.SetMaxOpenConns(10)
@@ -67,10 +70,21 @@ func Run(cfgPath, pidPath string) error {
 
 	sessionAuth := &auth.SessionAuthorizer{DB: db}
 	direct.SetAuthorizer(sessionAuthorizer{inner: sessionAuth})
-	backend := direct.NewBackend(db)
+	mailer := email.New(email.Options{
+		From:         cfg.Email.From,
+		ResendAPIKey: cfg.Email.Resend.APIKey,
+	})
+	if cfg.Email.Configured() {
+		slog.Info("email enabled", "provider", "resend")
+	} else {
+		slog.Info("email disabled: from or resend api_key not set")
+	}
+	backend := direct.NewBackend(db, mailer, cfg.Server.PublicURL)
 	handler := api.NewMux(backend, api.MuxOptions{
 		DB:           db,
 		CookieSecure: strings.HasPrefix(cfg.Server.PublicURL, "https://"),
+		Mailer:       mailer,
+		PublicURL:    cfg.Server.PublicURL,
 	})
 	server := &http.Server{
 		Addr:              cfg.Addr(),
@@ -78,10 +92,20 @@ func Run(cfgPath, pidPath string) error {
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 
+	ln, err := net.Listen("tcp", cfg.Addr())
+	if err != nil {
+		return fmt.Errorf("listen %s: %w", cfg.Addr(), err)
+	}
+	if err := process.WritePID(pidPath); err != nil {
+		_ = ln.Close()
+		return fmt.Errorf("write pid: %w", err)
+	}
+	defer func() { _ = process.RemovePID(pidPath) }()
+
 	errCh := make(chan error, 1)
 	go func() {
 		slog.Info("http server listening", "addr", cfg.Addr(), "env", cfg.Env)
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := server.Serve(ln); err != nil && err != http.ErrServerClosed {
 			errCh <- err
 		}
 	}()

@@ -18,3 +18,53 @@ export function register(input: contract.RegisterInput, signal?: AbortSignal) {
   return call<contract.RegisterResult>({ method: "POST", path: "/api/register", body: input }, signal)
 }
 
+/** 分页列出用户（查询参数 _start、_end）。 */
+export function listUsers(signal?: AbortSignal) {
+  return call<contract.UserList>({ method: "GET", path: "/api/users" }, signal)
+}
+
+/** 获取单个用户。 */
+export function getUser(input: contract.UserIDInput, signal?: AbortSignal) {
+  return call<contract.User>({ method: "GET", path: `/api/users/${input.id}` }, signal)
+}
+
+/** 创建用户。 */
+export function createUser(input: contract.UserCreateInput, signal?: AbortSignal) {
+  return call<contract.User>({ method: "POST", path: "/api/users", body: input }, signal)
+}
+
+/** 更新用户；password 为空不改密。 */
+export function updateUser(input: contract.UserUpdateInput, signal?: AbortSignal) {
+  return call<contract.User>({ method: "PATCH", path: `/api/users/${input.id}`, body: input }, signal)
+}
+
+/** 删除用户。 */
+export function deleteUser(input: contract.UserIDInput, signal?: AbortSignal) {
+  return call<void>({ method: "DELETE", path: `/api/users/${input.id}` }, signal)
+}
+
+/** 邀请用户注册（发信）。 */
+export function inviteUser(input: contract.InviteUserInput, signal?: AbortSignal) {
+  return call<void>({ method: "POST", path: "/api/users/invite", body: input }, signal)
+}
+
+/** 按令牌查询未使用邀请。 */
+export function lookupInvite(input: contract.InviteTokenInput, signal?: AbortSignal) {
+  return call<contract.InviteLookup>({ method: "GET", path: `/api/invites/${input.token}` }, signal)
+}
+
+/** 接受邀请并创建账号。 */
+export function acceptInvite(input: contract.AcceptInviteInput, signal?: AbortSignal) {
+  return call<contract.User>({ method: "POST", path: "/api/invites/accept", body: input }, signal)
+}
+
+/** 读取站点设置。 */
+export function getSiteSettings(signal?: AbortSignal) {
+  return call<contract.SiteSettings>({ method: "GET", path: "/api/settings/site" }, signal)
+}
+
+/** 更新站点设置。 */
+export function updateSiteSettings(input: contract.SiteSettings, signal?: AbortSignal) {
+  return call<contract.SiteSettings>({ method: "PUT", path: "/api/settings/site", body: input }, signal)
+}
+

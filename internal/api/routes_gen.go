@@ -4,6 +4,7 @@ package api
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/runforyou-ai/ai-gateway/internal/contract"
 	"github.com/runforyou-ai/ai-gateway/internal/direct"
@@ -30,5 +31,114 @@ func registerGeneratedRoutes(mux *http.ServeMux, backend *direct.Backend) {
 		}
 		out, err := backend.Register(r.Context(), meta, input)
 		writeJSON(w, 201, out, err)
+	})
+	mux.HandleFunc("GET /api/users", func(w http.ResponseWriter, r *http.Request) {
+		meta := requestMeta(r)
+		out, err := backend.ListUsers(r.Context(), meta)
+		writeJSON(w, 200, out, err)
+	})
+	mux.HandleFunc("GET /api/users/{id}", func(w http.ResponseWriter, r *http.Request) {
+		meta := requestMeta(r)
+		var input contract.UserIDInput
+		{
+			raw := r.PathValue("id")
+			v, err := strconv.ParseInt(raw, 10, 64)
+			if err != nil {
+				writeJSON(w, http.StatusBadRequest, nil, errBadRequest)
+				return
+			}
+			input.ID = v
+		}
+		out, err := backend.GetUser(r.Context(), meta, input)
+		writeJSON(w, 200, out, err)
+	})
+	mux.HandleFunc("POST /api/users", func(w http.ResponseWriter, r *http.Request) {
+		meta := requestMeta(r)
+		var input contract.UserCreateInput
+		if err := decodeJSONBody(r, &input); err != nil {
+			writeJSON(w, http.StatusBadRequest, nil, err)
+			return
+		}
+		out, err := backend.CreateUser(r.Context(), meta, input)
+		writeJSON(w, 201, out, err)
+	})
+	mux.HandleFunc("PATCH /api/users/{id}", func(w http.ResponseWriter, r *http.Request) {
+		meta := requestMeta(r)
+		var input contract.UserUpdateInput
+		if err := decodeJSONBody(r, &input); err != nil {
+			writeJSON(w, http.StatusBadRequest, nil, err)
+			return
+		}
+		{
+			raw := r.PathValue("id")
+			v, err := strconv.ParseInt(raw, 10, 64)
+			if err != nil {
+				writeJSON(w, http.StatusBadRequest, nil, errBadRequest)
+				return
+			}
+			input.ID = v
+		}
+		out, err := backend.UpdateUser(r.Context(), meta, input)
+		writeJSON(w, 200, out, err)
+	})
+	mux.HandleFunc("DELETE /api/users/{id}", func(w http.ResponseWriter, r *http.Request) {
+		meta := requestMeta(r)
+		var input contract.UserIDInput
+		{
+			raw := r.PathValue("id")
+			v, err := strconv.ParseInt(raw, 10, 64)
+			if err != nil {
+				writeJSON(w, http.StatusBadRequest, nil, errBadRequest)
+				return
+			}
+			input.ID = v
+		}
+		err := backend.DeleteUser(r.Context(), meta, input)
+		writeJSON(w, 204, nil, err)
+	})
+	mux.HandleFunc("POST /api/users/invite", func(w http.ResponseWriter, r *http.Request) {
+		meta := requestMeta(r)
+		var input contract.InviteUserInput
+		if err := decodeJSONBody(r, &input); err != nil {
+			writeJSON(w, http.StatusBadRequest, nil, err)
+			return
+		}
+		err := backend.InviteUser(r.Context(), meta, input)
+		writeJSON(w, 204, nil, err)
+	})
+	mux.HandleFunc("GET /api/invites/{token}", func(w http.ResponseWriter, r *http.Request) {
+		meta := requestMeta(r)
+		var input contract.InviteTokenInput
+		{
+			raw := r.PathValue("token")
+			input.Token = raw
+		}
+		out, err := backend.LookupInvite(r.Context(), meta, input)
+		writeJSON(w, 200, out, err)
+	})
+	mux.HandleFunc("POST /api/invites/accept", func(w http.ResponseWriter, r *http.Request) {
+		meta := requestMeta(r)
+		var input contract.AcceptInviteInput
+		if err := decodeJSONBody(r, &input); err != nil {
+			writeJSON(w, http.StatusBadRequest, nil, err)
+			return
+		}
+		out, err := backend.AcceptInvite(r.Context(), meta, input)
+		writeJSON(w, 201, out, err)
+	})
+	mux.HandleFunc("GET /api/settings/site", func(w http.ResponseWriter, r *http.Request) {
+		meta := requestMeta(r)
+		out, err := backend.GetSiteSettings(r.Context(), meta)
+		writeJSON(w, 200, out, err)
+	})
+	mux.HandleFunc("PUT /api/settings/site", func(w http.ResponseWriter, r *http.Request) {
+		meta := requestMeta(r)
+		var input contract.SiteSettings
+		if err := decodeJSONBody(r, &input); err != nil {
+			writeJSON(w, http.StatusBadRequest, nil, err)
+			return
+		}
+		out, err := backend.UpdateSiteSettings(r.Context(), meta, input)
+		writeJSON(w, 200, out, err)
 	})
 }

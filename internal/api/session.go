@@ -59,6 +59,12 @@ func (h *sessionHandlers) login(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+	if errors.Is(err, actionauth.ErrAccountDisabled) {
+		writeJSON(w, 0, nil, &direct.APIError{
+			Status: http.StatusForbidden, Message: "account disabled",
+		})
+		return
+	}
 	if err != nil {
 		writeJSON(w, 0, nil, err)
 		return

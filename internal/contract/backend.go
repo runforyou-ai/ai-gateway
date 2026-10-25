@@ -23,4 +23,44 @@ type Backend interface {
 	// Register 注册账号；第一个用户为 admin，其后为 user（需开放注册）。
 	//contract:route POST /register status=201 auth=public
 	Register(context.Context, RequestMeta, RegisterInput) (RegisterResult, error)
+
+	// ListUsers 分页列出用户（查询参数 _start、_end）。
+	//contract:route GET /users auth=admin
+	ListUsers(context.Context, RequestMeta) (UserList, error)
+
+	// GetUser 获取单个用户。
+	//contract:route GET /users/{id} auth=admin
+	GetUser(context.Context, RequestMeta, UserIDInput) (User, error)
+
+	// CreateUser 创建用户。
+	//contract:route POST /users status=201 auth=admin
+	CreateUser(context.Context, RequestMeta, UserCreateInput) (User, error)
+
+	// UpdateUser 更新用户；password 为空不改密。
+	//contract:route PATCH /users/{id} auth=admin
+	UpdateUser(context.Context, RequestMeta, UserUpdateInput) (User, error)
+
+	// DeleteUser 删除用户。
+	//contract:route DELETE /users/{id} status=204 auth=admin
+	DeleteUser(context.Context, RequestMeta, UserIDInput) error
+
+	// InviteUser 邀请用户注册（发信）。
+	//contract:route POST /users/invite status=204 auth=admin
+	InviteUser(context.Context, RequestMeta, InviteUserInput) error
+
+	// LookupInvite 按令牌查询未使用邀请。
+	//contract:route GET /invites/{token} auth=public
+	LookupInvite(context.Context, RequestMeta, InviteTokenInput) (InviteLookup, error)
+
+	// AcceptInvite 接受邀请并创建账号。
+	//contract:route POST /invites/accept status=201 auth=public
+	AcceptInvite(context.Context, RequestMeta, AcceptInviteInput) (User, error)
+
+	// GetSiteSettings 读取站点设置。
+	//contract:route GET /settings/site auth=admin
+	GetSiteSettings(context.Context, RequestMeta) (SiteSettings, error)
+
+	// UpdateSiteSettings 更新站点设置。
+	//contract:route PUT /settings/site auth=admin
+	UpdateSiteSettings(context.Context, RequestMeta, SiteSettings) (SiteSettings, error)
 }

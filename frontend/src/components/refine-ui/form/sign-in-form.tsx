@@ -19,7 +19,11 @@ import { Separator } from "@/components/ui/separator";
 import { InputPassword } from "@/components/refine-ui/form/input-password";
 import { cn } from "@/lib/utils";
 
-export const SignInForm = () => {
+type SignInFormProps = {
+  showSignUp?: boolean;
+};
+
+export const SignInForm = ({ showSignUp = false }: SignInFormProps) => {
   const [rememberMe, setRememberMe] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -98,9 +102,22 @@ export const SignInForm = () => {
             <div
               className={cn("relative", "flex", "flex-col", "gap-2", "mt-6")}
             >
-              <Label htmlFor="password">
-                {translate("pages.login.fields.password")}
-              </Label>
+              <div className={cn("flex", "items-center", "justify-between")}>
+                <Label htmlFor="password">
+                  {translate("pages.login.fields.password")}
+                </Label>
+                <Link
+                  to="/forgot-password"
+                  className={cn(
+                    "text-sm",
+                    "text-muted-foreground",
+                    "hover:text-foreground",
+                    "transition-colors",
+                  )}
+                >
+                  {translate("pages.login.buttons.forgotPassword")}
+                </Link>
+              </div>
               <InputPassword
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -127,26 +144,29 @@ export const SignInForm = () => {
           </form>
         </CardContent>
 
-        <Separator />
-
-        <CardFooter>
-          <div className={cn("w-full", "text-center text-sm")}>
-            <span className={cn("text-sm", "text-muted-foreground")}>
-              {translate("pages.login.buttons.noAccount")}{" "}
-            </span>
-            <Link
-              to="/register"
-              className={cn(
-                "text-green-600",
-                "dark:text-green-400",
-                "font-semibold",
-                "underline"
-              )}
-            >
-              {translate("pages.login.buttons.signup")}
-            </Link>
-          </div>
-        </CardFooter>
+        {showSignUp ? (
+          <>
+            <Separator />
+            <CardFooter>
+              <div className={cn("w-full", "text-center text-sm")}>
+                <span className={cn("text-sm", "text-muted-foreground")}>
+                  {translate("pages.login.buttons.noAccount")}{" "}
+                </span>
+                <Link
+                  to="/register"
+                  className={cn(
+                    "text-green-600",
+                    "dark:text-green-400",
+                    "font-semibold",
+                    "underline"
+                  )}
+                >
+                  {translate("pages.login.buttons.signup")}
+                </Link>
+              </div>
+            </CardFooter>
+          </>
+        ) : null}
       </Card>
     </div>
   );

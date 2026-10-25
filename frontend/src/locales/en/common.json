@@ -13,13 +13,68 @@
       "buttons": {
         "submit": "Sign in",
         "rememberMe": "Remember me",
+        "forgotPassword": "Forgot password?",
         "noAccount": "No account?",
         "signup": "Sign up"
       }
     },
+    "forgotPassword": {
+      "title": "Forgot password",
+      "description": "Enter your email and we will send a reset link.",
+      "fields": {
+        "email": "Email"
+      },
+      "buttons": {
+        "submit": "Send reset email",
+        "back": "Back to sign in"
+      },
+      "successTitle": "Email sent",
+      "successDescription": "If an account exists for that email, you will receive a reset link."
+    },
+    "resetPassword": {
+      "title": "Reset password",
+      "description": "Choose a new password (at least 8 characters).",
+      "missingToken": "This reset link is invalid or expired. Please request a new one.",
+      "fields": {
+        "password": "New password",
+        "confirmPassword": "Confirm new password"
+      },
+      "buttons": {
+        "submit": "Update password",
+        "back": "Back to sign in"
+      },
+      "errors": {
+        "passwordMismatch": "Passwords don't match"
+      },
+      "successTitle": "Password updated",
+      "successDescription": "You can sign in with your new password."
+    },
+    "acceptInvite": {
+      "title": "Accept invite",
+      "description": "Set your name and password to finish registration.",
+      "loading": "Checking invite…",
+      "missingToken": "This invite link is invalid or expired.",
+      "failed": "Failed to accept invite. Please try again.",
+      "fields": {
+        "email": "Email",
+        "name": "Name",
+        "password": "Password",
+        "confirmPassword": "Confirm password"
+      },
+      "buttons": {
+        "submit": "Create account",
+        "back": "Back to sign in"
+      },
+      "errors": {
+        "passwordMismatch": "Passwords don't match"
+      },
+      "successTitle": "Account created",
+      "successDescription": "You can sign in with your new account."
+    },
     "register": {
       "title": "Sign up",
-      "description": "Create your account. The first user becomes admin.",
+      "description": "Create your account.",
+      "descriptionFirst": "Create your account. The first user becomes admin.",
       "fields": {
         "name": "Name",
         "email": "Email",
@@ -110,8 +165,20 @@
     "en": "English"
   },
   "settings": {
-    "title": "Settings",
-    "placeholder": "Settings content is not wired yet. Placeholder only."
+    "title": "Site settings",
+    "saved": "Settings saved",
+    "saveFailed": "Failed to save. Please try again.",
+    "loadFailed": "Failed to load settings",
+    "registrationOpenHint": "When closed, accounts can only be created by invite or an admin.",
+    "fields": {
+      "name": "Site name",
+      "registrationOpen": "Open registration"
+    },
+    "fieldErrors": {
+      "name": {
+        "invalid": "Invalid site name"
+      }
+    }
   },
   "buttons": {
     "logout": "Log out",
@@ -128,10 +195,48 @@
   },
   "resources": {
     "dashboard": "Dashboard",
+    "users": "Users",
     "models": "Models",
     "providers": "Providers",
     "api-keys": "API Keys",
     "settings": "Settings"
+  },
+  "users": {
+    "createTitle": "Create user",
+    "editTitle": "Edit user",
+    "passwordHint": "Leave blank to keep the current password.",
+    "disabled": {
+      "yes": "Disabled",
+      "no": "Active"
+    },
+    "invite": {
+      "button": "Invite",
+      "title": "Invite user",
+      "description": "Send an invite email so they can set a password and join.",
+      "submit": "Send invite",
+      "success": "Invite email sent",
+      "failed": "Failed to send invite"
+    },
+    "fields": {
+      "id": "ID",
+      "name": "Name",
+      "email": "Email",
+      "password": "Password",
+      "role": "Role",
+      "disabled": "Disable account",
+      "actions": "Actions"
+    },
+    "fieldErrors": {
+      "name": {
+        "invalid": "Invalid name"
+      },
+      "email": {
+        "invalid": "Invalid email"
+      },
+      "password": {
+        "invalid": "Password must be at least 8 characters"
+      }
+    }
   },
   "dashboard": {
     "title": "Dashboard",

@@ -1,16 +1,23 @@
-.PHONY: dev build generate amd64 arm64
+.PHONY: dev backend frontend build amd64 arm64
 
 dev:
-	go run . serve &
-	cd frontend && pnpm dev
+	@target="$(filter backend frontend,$(MAKECMDGOALS))"; \
+	if [ "$$target" = "backend" ]; then \
+		go generate ./internal/contract && go run . serve; \
+	elif [ "$$target" = "frontend" ]; then \
+		cd frontend && pnpm dev; \
+	else \
+		echo "usage: make dev backend|frontend"; \
+		exit 1; \
+	fi
 
-generate:
-	go generate ./internal/contract
+backend frontend:
+	@:
 
 build:
 	@arch="$(filter amd64 arm64,$(MAKECMDGOALS))"; \
 	set -e; \
-	$(MAKE) generate; \
+	go generate ./internal/contract; \
 	go mod tidy; \
 	( cd frontend && pnpm build ); \
 	rm -rf internal/web/dist; \

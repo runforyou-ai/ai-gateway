@@ -96,7 +96,9 @@
 
 ```bash
 go run . init
-make dev                          # 本地开发：后端 + 管理台
+make dev backend                  # 后端（另开终端）
+make dev frontend                 # 管理台 Vite
+go run . stop                     # 停止后端
 make build                        # 当前机器二进制
 make build amd64                  # 或 arm64，供 Linux / Docker
 docker compose up --build         # 需先按宿主机架构完成交叉编译
