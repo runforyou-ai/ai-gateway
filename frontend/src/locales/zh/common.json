@@ -198,8 +198,64 @@
     "users": "用户",
     "models": "模型",
     "providers": "上游凭据",
-    "api-keys": "API Key",
+    "virtual-keys": "虚拟密钥",
     "settings": "设置"
+  },
+  "virtualKeys": {
+    "createTitle": "新建虚拟密钥",
+    "editTitle": "编辑虚拟密钥",
+    "secretTitle": "虚拟密钥已创建",
+    "secretHint": "请立即复制并妥善保存，离开本页后将无法再次查看完整密钥。",
+    "copy": "复制",
+    "copied": "已复制",
+    "done": "完成",
+    "unlimited": "无限制",
+    "never": "从不",
+    "budgetCustom": "自定义金额",
+    "budgetAmount": "{{amount}} 美元",
+    "expiresIn": {
+      "1h": "1 小时",
+      "1d": "1 天",
+      "3d": "3 天",
+      "7d": "7 天",
+      "30d": "30 天",
+      "90d": "90 天",
+      "180d": "180 天",
+      "365d": "1 年",
+      "unlimited": "无限制"
+    },
+    "budgetReset": {
+      "na": "N/A",
+      "daily": "每天",
+      "weekly": "每周",
+      "monthly": "每月"
+    },
+    "disabled": {
+      "yes": "已禁用",
+      "no": "正常"
+    },
+    "fields": {
+      "name": "名称",
+      "prefix": "前缀",
+      "maxBudget": "额度限制",
+      "customBudget": "自定义金额（美元）",
+      "spent": "已消费",
+      "budgetReset": "额度重置周期",
+      "expiresIn": "过期时间",
+      "expiresAt": "到期于",
+      "lastUsedAt": "最近使用",
+      "disabled": "禁用",
+      "createdAt": "创建时间",
+      "actions": "操作"
+    },
+    "fieldErrors": {
+      "name": {
+        "invalid": "名称无效"
+      },
+      "maxBudget": {
+        "invalid": "须为正数"
+      }
+    }
   },
   "users": {
     "createTitle": "新建用户",

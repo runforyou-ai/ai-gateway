@@ -79,3 +79,57 @@ export type UserUpdateInput = {
   disabled: boolean
 }
 
+export type VirtualKey = {
+  id: number
+  name: string
+  prefix: string
+  disabled: boolean
+  maxBudget: string
+  spent: string
+  budgetReset: string
+  expiresIn: string
+  expiresAt: string
+  lastUsedAt: string
+  createdAt: string
+}
+
+export type VirtualKeyCreateInput = {
+  name: string
+  maxBudget: string
+  expiresIn: string
+  budgetReset: string
+}
+
+export type VirtualKeyCreated = {
+  id: number
+  name: string
+  prefix: string
+  disabled: boolean
+  maxBudget: string
+  spent: string
+  budgetReset: string
+  expiresIn: string
+  expiresAt: string
+  lastUsedAt: string
+  createdAt: string
+  secret: string
+}
+
+export type VirtualKeyIDInput = {
+  id: number
+}
+
+export type VirtualKeyList = {
+  items: VirtualKey[]
+  total: number
+}
+
+export type VirtualKeyUpdateInput = {
+  id: number
+  name: string
+  disabled: boolean
+  maxBudget: string
+  expiresIn: string
+  budgetReset: string
+}
+

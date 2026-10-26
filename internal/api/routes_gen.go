@@ -141,4 +141,68 @@ func registerGeneratedRoutes(mux *http.ServeMux, backend *direct.Backend) {
 		out, err := backend.UpdateSiteSettings(r.Context(), meta, input)
 		writeJSON(w, 200, out, err)
 	})
+	mux.HandleFunc("GET /api/virtual-keys", func(w http.ResponseWriter, r *http.Request) {
+		meta := requestMeta(r)
+		out, err := backend.ListVirtualKeys(r.Context(), meta)
+		writeJSON(w, 200, out, err)
+	})
+	mux.HandleFunc("GET /api/virtual-keys/{id}", func(w http.ResponseWriter, r *http.Request) {
+		meta := requestMeta(r)
+		var input contract.VirtualKeyIDInput
+		{
+			raw := r.PathValue("id")
+			v, err := strconv.ParseInt(raw, 10, 64)
+			if err != nil {
+				writeJSON(w, http.StatusBadRequest, nil, errBadRequest)
+				return
+			}
+			input.ID = v
+		}
+		out, err := backend.GetVirtualKey(r.Context(), meta, input)
+		writeJSON(w, 200, out, err)
+	})
+	mux.HandleFunc("POST /api/virtual-keys", func(w http.ResponseWriter, r *http.Request) {
+		meta := requestMeta(r)
+		var input contract.VirtualKeyCreateInput
+		if err := decodeJSONBody(r, &input); err != nil {
+			writeJSON(w, http.StatusBadRequest, nil, err)
+			return
+		}
+		out, err := backend.CreateVirtualKey(r.Context(), meta, input)
+		writeJSON(w, 201, out, err)
+	})
+	mux.HandleFunc("PATCH /api/virtual-keys/{id}", func(w http.ResponseWriter, r *http.Request) {
+		meta := requestMeta(r)
+		var input contract.VirtualKeyUpdateInput
+		if err := decodeJSONBody(r, &input); err != nil {
+			writeJSON(w, http.StatusBadRequest, nil, err)
+			return
+		}
+		{
+			raw := r.PathValue("id")
+			v, err := strconv.ParseInt(raw, 10, 64)
+			if err != nil {
+				writeJSON(w, http.StatusBadRequest, nil, errBadRequest)
+				return
+			}
+			input.ID = v
+		}
+		out, err := backend.UpdateVirtualKey(r.Context(), meta, input)
+		writeJSON(w, 200, out, err)
+	})
+	mux.HandleFunc("DELETE /api/virtual-keys/{id}", func(w http.ResponseWriter, r *http.Request) {
+		meta := requestMeta(r)
+		var input contract.VirtualKeyIDInput
+		{
+			raw := r.PathValue("id")
+			v, err := strconv.ParseInt(raw, 10, 64)
+			if err != nil {
+				writeJSON(w, http.StatusBadRequest, nil, errBadRequest)
+				return
+			}
+			input.ID = v
+		}
+		err := backend.DeleteVirtualKey(r.Context(), meta, input)
+		writeJSON(w, 204, nil, err)
+	})
 }

@@ -63,4 +63,24 @@ type Backend interface {
 	// UpdateSiteSettings 更新站点设置。
 	//contract:route PUT /settings/site auth=admin
 	UpdateSiteSettings(context.Context, RequestMeta, SiteSettings) (SiteSettings, error)
+
+	// ListVirtualKeys 分页列出当前用户的虚拟密钥（查询参数 _start、_end）。
+	//contract:route GET /virtual-keys auth=user
+	ListVirtualKeys(context.Context, RequestMeta) (VirtualKeyList, error)
+
+	// GetVirtualKey 获取当前用户的单个虚拟密钥。
+	//contract:route GET /virtual-keys/{id} auth=user
+	GetVirtualKey(context.Context, RequestMeta, VirtualKeyIDInput) (VirtualKey, error)
+
+	// CreateVirtualKey 创建虚拟密钥；响应含一次性明文 secret。
+	//contract:route POST /virtual-keys status=201 auth=user
+	CreateVirtualKey(context.Context, RequestMeta, VirtualKeyCreateInput) (VirtualKeyCreated, error)
+
+	// UpdateVirtualKey 更新名称、禁用状态、预算、重置周期或过期时长。
+	//contract:route PATCH /virtual-keys/{id} auth=user
+	UpdateVirtualKey(context.Context, RequestMeta, VirtualKeyUpdateInput) (VirtualKey, error)
+
+	// DeleteVirtualKey 删除虚拟密钥。
+	//contract:route DELETE /virtual-keys/{id} status=204 auth=user
+	DeleteVirtualKey(context.Context, RequestMeta, VirtualKeyIDInput) error
 }
