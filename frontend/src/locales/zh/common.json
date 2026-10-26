@@ -201,6 +201,34 @@
     "virtual-keys": "虚拟密钥",
     "settings": "设置"
   },
+  "models": {
+    "createTitle": "新建模型",
+    "editTitle": "编辑模型",
+    "nameHint": "客户端使用的对外模型标识（如 deepseek-flash）。",
+    "typeHint": "该类型支持的对外 API 端点由代码约定，无需逐个勾选。",
+    "disabled": {
+      "yes": "已禁用",
+      "no": "正常"
+    },
+    "types": {
+      "chat": "对话 / LLM"
+    },
+    "fields": {
+      "name": "模型标识",
+      "displayName": "展示名称",
+      "type": "类型",
+      "disabled": "禁用",
+      "actions": "操作"
+    },
+    "fieldErrors": {
+      "name": {
+        "invalid": "模型标识无效"
+      },
+      "displayName": {
+        "invalid": "展示名称无效"
+      }
+    }
+  },
   "virtualKeys": {
     "createTitle": "新建虚拟密钥",
     "editTitle": "编辑虚拟密钥",

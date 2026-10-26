@@ -45,9 +45,8 @@ import { ForgotPasswordPage } from "./pages/forgot-password";
 import { ResetPasswordPage } from "./pages/reset-password";
 import { SignInPage } from "./pages/sign-in";
 import { SignUpPage } from "./pages/sign-up";
-import { UserCreatePage } from "./pages/users/create";
-import { UserEditPage } from "./pages/users/edit";
 import { UserListPage } from "./pages/users/list";
+import { ModelListPage } from "./pages/models/list";
 import { VirtualKeyListPage } from "./pages/virtual-keys/list";
 import { WelcomePage } from "./pages/welcome";
 import "./i18n";
@@ -89,8 +88,6 @@ function App() {
                 {
                   name: "users",
                   list: `${CONSOLE_PREFIX}/users`,
-                  create: `${CONSOLE_PREFIX}/users/create`,
-                  edit: `${CONSOLE_PREFIX}/users/edit/:id`,
                   meta: {
                     label: t("resources.users"),
                     icon: <Users className="h-4 w-4" />,
@@ -180,10 +177,19 @@ function App() {
                     }
                   >
                     <Route index element={<UserListPage />} />
-                    <Route path="create" element={<UserCreatePage />} />
-                    <Route path="edit/:id" element={<UserEditPage />} />
                   </Route>
-                  <Route path="models" element={<PlaceholderListPage />} />
+                  <Route
+                    path="models"
+                    element={
+                      <CanAccess
+                        resource="models"
+                        action="list"
+                        fallback={<Navigate to={CONSOLE_PREFIX} replace />}
+                      >
+                        <ModelListPage />
+                      </CanAccess>
+                    }
+                  />
                   <Route path="providers" element={<PlaceholderListPage />} />
                   <Route path="virtual-keys" element={<VirtualKeyListPage />} />
                   <Route

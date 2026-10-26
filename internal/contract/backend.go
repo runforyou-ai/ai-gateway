@@ -83,4 +83,24 @@ type Backend interface {
 	// DeleteVirtualKey 删除虚拟密钥。
 	//contract:route DELETE /virtual-keys/{id} status=204 auth=user
 	DeleteVirtualKey(context.Context, RequestMeta, VirtualKeyIDInput) error
+
+	// ListModels 分页列出模型目录（查询参数 _start、_end）。
+	//contract:route GET /models auth=admin
+	ListModels(context.Context, RequestMeta) (CatalogModelList, error)
+
+	// GetModel 获取单个目录模型。
+	//contract:route GET /models/{id} auth=admin
+	GetModel(context.Context, RequestMeta, CatalogModelIDInput) (CatalogModel, error)
+
+	// CreateModel 创建目录模型。
+	//contract:route POST /models status=201 auth=admin
+	CreateModel(context.Context, RequestMeta, CatalogModelCreateInput) (CatalogModel, error)
+
+	// UpdateModel 更新目录模型。
+	//contract:route PATCH /models/{id} auth=admin
+	UpdateModel(context.Context, RequestMeta, CatalogModelUpdateInput) (CatalogModel, error)
+
+	// DeleteModel 删除目录模型。
+	//contract:route DELETE /models/{id} status=204 auth=admin
+	DeleteModel(context.Context, RequestMeta, CatalogModelIDInput) error
 }

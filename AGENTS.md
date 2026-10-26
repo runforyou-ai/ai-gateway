@@ -6,6 +6,10 @@
 - 业务与运行日志只用 `log/slog`；控制台按行纯文本。
 - 构建、生成、本地联调按 `Makefile`（`dev backend` / `dev frontend` / `build`）；`dev backend` 与 `build` 会跑契约生成；停后端用 `go run . stop`。
 - 每表必须有 `created_at`、`updated_at`；列顺序紧跟主键（`id` 或 `name`）之后，并挂 `set_updated_at()` 触发器；model 字段顺序与迁移一致。
+- 新迁移：`YYYYMMDDHHMM_描述.sql`。
+- 前端优先 Refine / refine-ui / shadcn 官方写法；表单参考 `frontend/src/pages/profile.tsx`；实时若接入则走 jetcast，不做 realtime 契约生成。
+- **禁止自拟 UI 尺寸与样式**：Dialog / Sheet / 按钮 / 表单等直接用组件默认（勿加 `sm:max-w-md`、自定义高度、额外间距体系等）；仅在官方文档或现有页面已有先例时才覆盖 className。不要「顺手美化」。
+- 集成测试：`internal/integrationtest/`；`TEST_POSTGRES_*`（至少 `HOST`），库名以 `_test` 结尾，未设则 Skip。
 
 ## 分层
 
@@ -44,9 +48,3 @@ internal/integrationtest/
 - 失败：`{ "message": "...", "fields": { "email": "required" } }`（`fields` 可选）；无单独业务 `code`。
 - 500 的 `message` 对前端固定通用文案，细节只打 slog。
 - `/v1` 错误保持协议原生形状。
-
-## 其他
-
-- 新迁移：`YYYYMMDDHHMM_描述.sql`。
-- 前端优先 Refine / refine-ui / shadcn 官方写法；表单参考 `frontend/src/pages/profile.tsx`；实时若接入则走 jetcast，不做 realtime 契约生成。
-- 集成测试：`internal/integrationtest/`；`TEST_POSTGRES_*`（至少 `HOST`），库名以 `_test` 结尾，未设则 Skip。

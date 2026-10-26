@@ -205,4 +205,68 @@ func registerGeneratedRoutes(mux *http.ServeMux, backend *direct.Backend) {
 		err := backend.DeleteVirtualKey(r.Context(), meta, input)
 		writeJSON(w, 204, nil, err)
 	})
+	mux.HandleFunc("GET /api/models", func(w http.ResponseWriter, r *http.Request) {
+		meta := requestMeta(r)
+		out, err := backend.ListModels(r.Context(), meta)
+		writeJSON(w, 200, out, err)
+	})
+	mux.HandleFunc("GET /api/models/{id}", func(w http.ResponseWriter, r *http.Request) {
+		meta := requestMeta(r)
+		var input contract.CatalogModelIDInput
+		{
+			raw := r.PathValue("id")
+			v, err := strconv.ParseInt(raw, 10, 64)
+			if err != nil {
+				writeJSON(w, http.StatusBadRequest, nil, errBadRequest)
+				return
+			}
+			input.ID = v
+		}
+		out, err := backend.GetModel(r.Context(), meta, input)
+		writeJSON(w, 200, out, err)
+	})
+	mux.HandleFunc("POST /api/models", func(w http.ResponseWriter, r *http.Request) {
+		meta := requestMeta(r)
+		var input contract.CatalogModelCreateInput
+		if err := decodeJSONBody(r, &input); err != nil {
+			writeJSON(w, http.StatusBadRequest, nil, err)
+			return
+		}
+		out, err := backend.CreateModel(r.Context(), meta, input)
+		writeJSON(w, 201, out, err)
+	})
+	mux.HandleFunc("PATCH /api/models/{id}", func(w http.ResponseWriter, r *http.Request) {
+		meta := requestMeta(r)
+		var input contract.CatalogModelUpdateInput
+		if err := decodeJSONBody(r, &input); err != nil {
+			writeJSON(w, http.StatusBadRequest, nil, err)
+			return
+		}
+		{
+			raw := r.PathValue("id")
+			v, err := strconv.ParseInt(raw, 10, 64)
+			if err != nil {
+				writeJSON(w, http.StatusBadRequest, nil, errBadRequest)
+				return
+			}
+			input.ID = v
+		}
+		out, err := backend.UpdateModel(r.Context(), meta, input)
+		writeJSON(w, 200, out, err)
+	})
+	mux.HandleFunc("DELETE /api/models/{id}", func(w http.ResponseWriter, r *http.Request) {
+		meta := requestMeta(r)
+		var input contract.CatalogModelIDInput
+		{
+			raw := r.PathValue("id")
+			v, err := strconv.ParseInt(raw, 10, 64)
+			if err != nil {
+				writeJSON(w, http.StatusBadRequest, nil, errBadRequest)
+				return
+			}
+			input.ID = v
+		}
+		err := backend.DeleteModel(r.Context(), meta, input)
+		writeJSON(w, 204, nil, err)
+	})
 }

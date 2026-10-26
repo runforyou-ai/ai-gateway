@@ -201,6 +201,34 @@
     "virtual-keys": "Virtual Keys",
     "settings": "Settings"
   },
+  "models": {
+    "createTitle": "Create model",
+    "editTitle": "Edit model",
+    "nameHint": "Public model identifier used by clients (e.g. deepseek-flash).",
+    "typeHint": "Supported public API endpoints are determined by model type in code.",
+    "disabled": {
+      "yes": "Disabled",
+      "no": "Active"
+    },
+    "types": {
+      "chat": "Chat / LLM"
+    },
+    "fields": {
+      "name": "Model identifier",
+      "displayName": "Display name",
+      "type": "Type",
+      "disabled": "Disable",
+      "actions": "Actions"
+    },
+    "fieldErrors": {
+      "name": {
+        "invalid": "Invalid model identifier"
+      },
+      "displayName": {
+        "invalid": "Invalid display name"
+      }
+    }
+  },
   "virtualKeys": {
     "createTitle": "Create virtual key",
     "editTitle": "Edit virtual key",
