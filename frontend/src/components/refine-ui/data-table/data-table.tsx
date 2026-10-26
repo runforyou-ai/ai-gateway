@@ -1,6 +1,10 @@
 "use client";
 
-import type { HttpError, BaseRecord } from "@refinedev/core";
+import {
+  useTranslation,
+  type HttpError,
+  type BaseRecord,
+} from "@refinedev/core";
 import type { UseTableReturnType } from "@refinedev/react-table";
 import type { Column } from "@tanstack/react-table";
 import { flexRender } from "@tanstack/react-table";
@@ -219,6 +223,8 @@ function DataTableNoData({
   isOverflowing: { horizontal: boolean; vertical: boolean };
   columnsLength: number;
 }) {
+  const { translate } = useTranslation();
+
   return (
     <TableRow className="hover:bg-transparent">
       <TableCell
@@ -247,10 +253,10 @@ function DataTableNoData({
           }}
         >
           <div className={cn("text-lg", "font-semibold", "text-foreground")}>
-            No data to display
+            {translate("table.empty.title")}
           </div>
           <div className={cn("text-sm", "text-muted-foreground")}>
-            This table is empty for the time being.
+            {translate("table.empty.description")}
           </div>
         </div>
       </TableCell>

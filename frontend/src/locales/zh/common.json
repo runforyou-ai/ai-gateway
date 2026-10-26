@@ -193,6 +193,12 @@
     "clone": "复制",
     "undo": "撤销"
   },
+  "table": {
+    "empty": {
+      "title": "暂无数据",
+      "description": "当前列表为空。"
+    }
+  },
   "resources": {
     "dashboard": "概览",
     "users": "用户",

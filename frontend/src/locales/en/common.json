@@ -193,6 +193,12 @@
     "clone": "Clone",
     "undo": "Undo"
   },
+  "table": {
+    "empty": {
+      "title": "No data to display",
+      "description": "This table is empty for the time being."
+    }
+  },
   "resources": {
     "dashboard": "Dashboard",
     "users": "Users",
