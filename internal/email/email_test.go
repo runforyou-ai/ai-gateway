@@ -19,19 +19,19 @@ func TestNewNotConfigured(t *testing.T) {
 	}
 }
 
-func TestNormalizeFrom(t *testing.T) {
+func TestFormatFrom(t *testing.T) {
 	cases := []struct {
-		in, want string
+		from, name, want string
 	}{
-		{"hi@runforyou.app", `"AI Gateway" <hi@runforyou.app>`},
-		{"  hi@runforyou.app  ", `"AI Gateway" <hi@runforyou.app>`},
-		{"RunForYou <hi@runforyou.app>", `"RunForYou" <hi@runforyou.app>`},
-		{"AI Gateway <noreply@example.com>", `"AI Gateway" <noreply@example.com>`},
+		{"hi@runforyou.app", "RunForYou", `"RunForYou" <hi@runforyou.app>`},
+		{"hi@runforyou.app", "", "hi@runforyou.app"},
+		{"AI Gateway <noreply@example.com>", "", `"AI Gateway" <noreply@example.com>`},
+		{"old <noreply@example.com>", "RunForYou", `"RunForYou" <noreply@example.com>`},
 	}
 	for _, tc := range cases {
-		got := normalizeFrom(tc.in)
+		got := formatFrom(tc.from, tc.name)
 		if got != tc.want {
-			t.Fatalf("normalizeFrom(%q) = %q, want %q", tc.in, got, tc.want)
+			t.Fatalf("formatFrom(%q, %q) = %q, want %q", tc.from, tc.name, got, tc.want)
 		}
 	}
 }

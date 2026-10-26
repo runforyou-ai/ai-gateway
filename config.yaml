@@ -14,5 +14,6 @@ log:
   dir: /var/log/ai-gateway
 email:
   from: ""
+  from_name: ""
   resend:
     api_key: ""

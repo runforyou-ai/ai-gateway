@@ -72,6 +72,7 @@ func Run(cfgPath, pidPath string) error {
 	direct.SetAuthorizer(sessionAuthorizer{inner: sessionAuth})
 	mailer := email.New(email.Options{
 		From:         cfg.Email.From,
+		FromName:     cfg.Email.FromName,
 		ResendAPIKey: cfg.Email.Resend.APIKey,
 	})
 	if cfg.Email.Configured() {

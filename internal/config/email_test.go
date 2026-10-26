@@ -24,11 +24,15 @@ func TestEmailConfigured(t *testing.T) {
 func TestApplyEnvMapEmail(t *testing.T) {
 	cfg := Default()
 	applyEnvMap(&cfg, map[string]string{
-		"EMAIL_FROM":           "AI Gateway <noreply@example.com>",
+		"EMAIL_FROM":           "noreply@example.com",
+		"EMAIL_FROM_NAME":      "AI Gateway",
 		"EMAIL_RESEND_API_KEY": "re_secret",
 	})
-	if cfg.Email.From != "AI Gateway <noreply@example.com>" {
+	if cfg.Email.From != "noreply@example.com" {
 		t.Fatalf("From = %q", cfg.Email.From)
+	}
+	if cfg.Email.FromName != "AI Gateway" {
+		t.Fatalf("FromName = %q", cfg.Email.FromName)
 	}
 	if cfg.Email.Resend.APIKey != "re_secret" {
 		t.Fatalf("APIKey = %q", cfg.Email.Resend.APIKey)
