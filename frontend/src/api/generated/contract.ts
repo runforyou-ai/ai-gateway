@@ -6,6 +6,39 @@ export type AcceptInviteInput = {
   password: string
 }
 
+export type CatalogModel = {
+  id: number
+  name: string
+  displayName: string
+  type: string
+  disabled: boolean
+  createdAt: string
+}
+
+export type CatalogModelCreateInput = {
+  name: string
+  displayName: string
+  type: string
+  disabled: boolean
+}
+
+export type CatalogModelIDInput = {
+  id: number
+}
+
+export type CatalogModelList = {
+  items: CatalogModel[]
+  total: number
+}
+
+export type CatalogModelUpdateInput = {
+  id: number
+  name: string
+  displayName: string
+  type: string
+  disabled: boolean
+}
+
 export type HealthStatus = {
   ok: boolean
 }

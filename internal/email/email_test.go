@@ -19,6 +19,25 @@ func TestNewNotConfigured(t *testing.T) {
 	}
 }
 
+func TestFormatFrom(t *testing.T) {
+	cases := []struct {
+		from, name, want string
+	}{
+		{"hi@runforyou.app", "RunForYou", "RunForYou <hi@runforyou.app>"},
+		{"hi@runforyou.app", "AI Gateway", "AI Gateway <hi@runforyou.app>"},
+		{"hi@runforyou.app", "", "hi@runforyou.app"},
+		{"AI Gateway <noreply@example.com>", "", "AI Gateway <noreply@example.com>"},
+		{"old <noreply@example.com>", "RunForYou", "RunForYou <noreply@example.com>"},
+		{"a@b.com", `Acme "X"`, `"Acme \"X\"" <a@b.com>`},
+	}
+	for _, tc := range cases {
+		got := formatFrom(tc.from, tc.name)
+		if got != tc.want {
+			t.Fatalf("formatFrom(%q, %q) = %q, want %q", tc.from, tc.name, got, tc.want)
+		}
+	}
+}
+
 func TestResendSend(t *testing.T) {
 	var gotAuth, gotUA, gotCT string
 	var got resendRequest
@@ -101,5 +120,30 @@ func TestResendSendValidation(t *testing.T) {
 		if err := c.Send(context.Background(), msg); err == nil {
 			t.Fatalf("expected error for %+v", msg)
 		}
+	}
+}
+
+func TestNewPassesFormattedFrom(t *testing.T) {
+	var got resendRequest
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, _ := io.ReadAll(r.Body)
+		_ = json.Unmarshal(body, &got)
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{"id":"msg_1"}`))
+	}))
+	defer srv.Close()
+
+	s := New(Options{From: "hi@runforyou.app", FromName: "AI Gateway", ResendAPIKey: "re_test"})
+	c, ok := s.(*resendClient)
+	if !ok {
+		t.Fatalf("type %T", s)
+	}
+	c.url = srv.URL
+	c.http = srv.Client()
+	if err := c.Send(context.Background(), Message{To: "a@b.com", Subject: "x", Text: "y"}); err != nil {
+		t.Fatal(err)
+	}
+	if got.From != "AI Gateway <hi@runforyou.app>" {
+		t.Fatalf("from = %q", got.From)
 	}
 }

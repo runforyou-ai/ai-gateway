@@ -193,6 +193,12 @@
     "clone": "复制",
     "undo": "撤销"
   },
+  "table": {
+    "empty": {
+      "title": "暂无数据",
+      "description": "当前列表为空。"
+    }
+  },
   "resources": {
     "dashboard": "概览",
     "users": "用户",
@@ -200,6 +206,34 @@
     "providers": "上游凭据",
     "virtual-keys": "虚拟密钥",
     "settings": "设置"
+  },
+  "models": {
+    "createTitle": "新建模型",
+    "editTitle": "编辑模型",
+    "nameHint": "客户端使用的对外模型标识（如 deepseek-flash）。",
+    "typeHint": "决定模型能力类别；同类型对外协议由代码约定。",
+    "disabled": {
+      "yes": "已禁用",
+      "no": "正常"
+    },
+    "types": {
+      "chat": "对话 / LLM"
+    },
+    "fields": {
+      "name": "模型标识",
+      "displayName": "展示名称",
+      "type": "类型",
+      "disabled": "禁用",
+      "actions": "操作"
+    },
+    "fieldErrors": {
+      "name": {
+        "invalid": "模型标识无效"
+      },
+      "displayName": {
+        "invalid": "展示名称无效"
+      }
+    }
   },
   "virtualKeys": {
     "createTitle": "新建虚拟密钥",

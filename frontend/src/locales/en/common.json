@@ -193,6 +193,12 @@
     "clone": "Clone",
     "undo": "Undo"
   },
+  "table": {
+    "empty": {
+      "title": "No data to display",
+      "description": "This table is empty for the time being."
+    }
+  },
   "resources": {
     "dashboard": "Dashboard",
     "users": "Users",
@@ -200,6 +206,34 @@
     "providers": "Providers",
     "virtual-keys": "Virtual Keys",
     "settings": "Settings"
+  },
+  "models": {
+    "createTitle": "Create model",
+    "editTitle": "Edit model",
+    "nameHint": "Public model identifier used by clients (e.g. deepseek-flash).",
+    "typeHint": "Capability category; protocols for each type are defined in code.",
+    "disabled": {
+      "yes": "Disabled",
+      "no": "Active"
+    },
+    "types": {
+      "chat": "Chat / LLM"
+    },
+    "fields": {
+      "name": "Model identifier",
+      "displayName": "Display name",
+      "type": "Type",
+      "disabled": "Disable",
+      "actions": "Actions"
+    },
+    "fieldErrors": {
+      "name": {
+        "invalid": "Invalid model identifier"
+      },
+      "displayName": {
+        "invalid": "Invalid display name"
+      }
+    }
   },
   "virtualKeys": {
     "createTitle": "Create virtual key",

@@ -93,3 +93,28 @@ export function deleteVirtualKey(input: contract.VirtualKeyIDInput, signal?: Abo
   return call<void>({ method: "DELETE", path: `/api/virtual-keys/${input.id}` }, signal)
 }
 
+/** 分页列出模型目录（查询参数 _start、_end）。 */
+export function listModels(signal?: AbortSignal) {
+  return call<contract.CatalogModelList>({ method: "GET", path: "/api/models" }, signal)
+}
+
+/** 获取单个目录模型。 */
+export function getModel(input: contract.CatalogModelIDInput, signal?: AbortSignal) {
+  return call<contract.CatalogModel>({ method: "GET", path: `/api/models/${input.id}` }, signal)
+}
+
+/** 创建目录模型。 */
+export function createModel(input: contract.CatalogModelCreateInput, signal?: AbortSignal) {
+  return call<contract.CatalogModel>({ method: "POST", path: "/api/models", body: input }, signal)
+}
+
+/** 更新目录模型。 */
+export function updateModel(input: contract.CatalogModelUpdateInput, signal?: AbortSignal) {
+  return call<contract.CatalogModel>({ method: "PATCH", path: `/api/models/${input.id}`, body: input }, signal)
+}
+
+/** 删除目录模型。 */
+export function deleteModel(input: contract.CatalogModelIDInput, signal?: AbortSignal) {
+  return call<void>({ method: "DELETE", path: `/api/models/${input.id}` }, signal)
+}
+

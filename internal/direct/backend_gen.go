@@ -171,3 +171,47 @@ func (b *Backend) DeleteVirtualKey(ctx context.Context, meta contract.RequestMet
 	}
 	return b.Impl.DeleteVirtualKey(ctx, meta, input)
 }
+
+// ListModels 分页列出模型目录（查询参数 _start、_end）。
+func (b *Backend) ListModels(ctx context.Context, meta contract.RequestMeta) (contract.CatalogModelList, error) {
+	if err := authorize(ctx, &meta, "admin"); err != nil {
+		var zero contract.CatalogModelList
+		return zero, err
+	}
+	return b.Impl.ListModels(ctx, meta)
+}
+
+// GetModel 获取单个目录模型。
+func (b *Backend) GetModel(ctx context.Context, meta contract.RequestMeta, input contract.CatalogModelIDInput) (contract.CatalogModel, error) {
+	if err := authorize(ctx, &meta, "admin"); err != nil {
+		var zero contract.CatalogModel
+		return zero, err
+	}
+	return b.Impl.GetModel(ctx, meta, input)
+}
+
+// CreateModel 创建目录模型。
+func (b *Backend) CreateModel(ctx context.Context, meta contract.RequestMeta, input contract.CatalogModelCreateInput) (contract.CatalogModel, error) {
+	if err := authorize(ctx, &meta, "admin"); err != nil {
+		var zero contract.CatalogModel
+		return zero, err
+	}
+	return b.Impl.CreateModel(ctx, meta, input)
+}
+
+// UpdateModel 更新目录模型。
+func (b *Backend) UpdateModel(ctx context.Context, meta contract.RequestMeta, input contract.CatalogModelUpdateInput) (contract.CatalogModel, error) {
+	if err := authorize(ctx, &meta, "admin"); err != nil {
+		var zero contract.CatalogModel
+		return zero, err
+	}
+	return b.Impl.UpdateModel(ctx, meta, input)
+}
+
+// DeleteModel 删除目录模型。
+func (b *Backend) DeleteModel(ctx context.Context, meta contract.RequestMeta, input contract.CatalogModelIDInput) error {
+	if err := authorize(ctx, &meta, "admin"); err != nil {
+		return err
+	}
+	return b.Impl.DeleteModel(ctx, meta, input)
+}

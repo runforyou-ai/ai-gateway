@@ -256,7 +256,7 @@ export function VirtualKeyListPage() {
           if (!open) closeCreate()
         }}
       >
-        <DialogContent className="sm:max-w-md">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>
               {secret
@@ -311,7 +311,7 @@ export function VirtualKeyListPage() {
           if (!open) editModal.close()
         }}
       >
-        <DialogContent className="sm:max-w-md">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>{translate("virtualKeys.editTitle")}</DialogTitle>
           </DialogHeader>

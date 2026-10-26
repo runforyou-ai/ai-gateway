@@ -36,8 +36,9 @@ type Config struct {
 
 // EmailConfig 是发信部署配置；仅支持 Resend。未配齐时发信不可用。
 type EmailConfig struct {
-	From   string       `yaml:"from"`
-	Resend ResendConfig `yaml:"resend"`
+	From     string       `yaml:"from"`
+	FromName string       `yaml:"from_name"`
+	Resend   ResendConfig `yaml:"resend"`
 }
 
 // ResendConfig 是 Resend 渠道凭证。
@@ -265,6 +266,9 @@ func applyEnvMap(cfg *Config, env map[string]string) {
 	}
 	if v := env["EMAIL_FROM"]; v != "" {
 		cfg.Email.From = v
+	}
+	if v := env["EMAIL_FROM_NAME"]; v != "" {
+		cfg.Email.FromName = v
 	}
 	if v := env["EMAIL_RESEND_API_KEY"]; v != "" {
 		cfg.Email.Resend.APIKey = v

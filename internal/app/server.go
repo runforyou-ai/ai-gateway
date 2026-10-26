@@ -72,10 +72,12 @@ func Run(cfgPath, pidPath string) error {
 	direct.SetAuthorizer(sessionAuthorizer{inner: sessionAuth})
 	mailer := email.New(email.Options{
 		From:         cfg.Email.From,
+		FromName:     cfg.Email.FromName,
 		ResendAPIKey: cfg.Email.Resend.APIKey,
 	})
 	if cfg.Email.Configured() {
-		slog.Info("email enabled", "provider", "resend")
+		slog.Info("email enabled", "provider", "resend",
+			"from", cfg.Email.From, "from_name", cfg.Email.FromName)
 	} else {
 		slog.Info("email disabled: from or resend api_key not set")
 	}

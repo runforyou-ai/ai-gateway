@@ -2,7 +2,7 @@ import type { AccessControlProvider } from "@refinedev/core"
 import { authProvider } from "@/providers/auth"
 
 /** 仅管理员可访问的资源。 */
-const adminOnly = new Set(["users", "settings"])
+const adminOnly = new Set(["users", "settings", "models"])
 
 type Identity = {
   role?: string

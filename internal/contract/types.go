@@ -152,3 +152,41 @@ type VirtualKeyUpdateInput struct {
 	ExpiresIn   string `json:"expiresIn"`
 	BudgetReset string `json:"budgetReset"`
 }
+
+// CatalogModel 是管理台模型目录视图；对外协议由 type 在代码中推导，不单独落库或下发。
+type CatalogModel struct {
+	ID          int64  `json:"id"`
+	Name        string `json:"name"`
+	DisplayName string `json:"displayName"`
+	Type        string `json:"type"`
+	Disabled    bool   `json:"disabled"`
+	CreatedAt   string `json:"createdAt"`
+}
+
+// CatalogModelList 是模型目录分页列表。
+type CatalogModelList struct {
+	Items []CatalogModel `json:"items"`
+	Total int64          `json:"total"`
+}
+
+// CatalogModelIDInput 按 id 定位目录模型。
+type CatalogModelIDInput struct {
+	ID int64 `json:"id"`
+}
+
+// CatalogModelCreateInput 是创建目录模型参数。
+type CatalogModelCreateInput struct {
+	Name        string `json:"name"`
+	DisplayName string `json:"displayName"`
+	Type        string `json:"type"`
+	Disabled    bool   `json:"disabled"`
+}
+
+// CatalogModelUpdateInput 是更新目录模型参数。
+type CatalogModelUpdateInput struct {
+	ID          int64  `json:"id"`
+	Name        string `json:"name"`
+	DisplayName string `json:"displayName"`
+	Type        string `json:"type"`
+	Disabled    bool   `json:"disabled"`
+}
