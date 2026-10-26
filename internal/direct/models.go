@@ -68,19 +68,13 @@ func toContractCatalogModel(m models.Model) contract.CatalogModel {
 	if created.IsZero() {
 		created = time.Now().UTC()
 	}
-	protocols := m.SupportedProtocols()
-	outProtocols := make([]string, 0, len(protocols))
-	for _, p := range protocols {
-		outProtocols = append(outProtocols, string(p))
-	}
 	return contract.CatalogModel{
-		ID:                 m.ID,
-		Name:               m.Name,
-		DisplayName:        m.DisplayName,
-		Type:               string(m.Type),
-		SupportedProtocols: outProtocols,
-		Disabled:           m.Disabled,
-		CreatedAt:          created.UTC().Format(time.RFC3339),
+		ID:          m.ID,
+		Name:        m.Name,
+		DisplayName: m.DisplayName,
+		Type:        string(m.Type),
+		Disabled:    m.Disabled,
+		CreatedAt:   created.UTC().Format(time.RFC3339),
 	}
 }
 

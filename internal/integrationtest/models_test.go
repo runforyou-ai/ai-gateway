@@ -22,8 +22,11 @@ func TestCatalogModelCRUD(t *testing.T) {
 	if created.ID == 0 || created.Name != "deepseek-flash" {
 		t.Fatalf("created = %+v", created)
 	}
-	if len(created.SupportedProtocols()) != 4 {
-		t.Fatalf("protocols = %v", created.SupportedProtocols())
+	if created.Type != domain.ModelTypeChat {
+		t.Fatalf("type = %q", created.Type)
+	}
+	if n := len(created.Type.Protocols()); n != 4 {
+		t.Fatalf("type protocols = %d", n)
 	}
 
 	got, err := models.Get(ctx, db, created.ID)

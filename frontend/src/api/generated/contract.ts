@@ -11,7 +11,6 @@ export type CatalogModel = {
   name: string
   displayName: string
   type: string
-  supportedProtocols: string[]
   disabled: boolean
   createdAt: string
 }

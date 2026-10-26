@@ -19,7 +19,7 @@ COMMENT ON TABLE models IS '对外模型目录（公开契约名）';
 COMMENT ON COLUMN models.id IS '主键';
 COMMENT ON COLUMN models.created_at IS '创建时间';
 COMMENT ON COLUMN models.updated_at IS '更新时间';
-COMMENT ON COLUMN models.name IS '对外模型 id（如 deepseek-flash）';
+COMMENT ON COLUMN models.name IS '对外模型标识（如 deepseek-flash）';
 COMMENT ON COLUMN models.display_name IS '展示名称';
 COMMENT ON COLUMN models.type IS '模型类型：chat 等；对外协议由代码按类型推导';
 COMMENT ON COLUMN models.disabled IS '是否禁用；禁用后不可被路由选中';

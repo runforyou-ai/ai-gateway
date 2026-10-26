@@ -153,15 +153,14 @@ type VirtualKeyUpdateInput struct {
 	BudgetReset string `json:"budgetReset"`
 }
 
-// CatalogModel 是管理台模型目录视图；supportedProtocols 由 type 推导，只读。
+// CatalogModel 是管理台模型目录视图；对外协议由 type 在代码中推导，不单独落库或下发。
 type CatalogModel struct {
-	ID                 int64    `json:"id"`
-	Name               string   `json:"name"`
-	DisplayName        string   `json:"displayName"`
-	Type               string   `json:"type"`
-	SupportedProtocols []string `json:"supportedProtocols"`
-	Disabled           bool     `json:"disabled"`
-	CreatedAt          string   `json:"createdAt"`
+	ID          int64  `json:"id"`
+	Name        string `json:"name"`
+	DisplayName string `json:"displayName"`
+	Type        string `json:"type"`
+	Disabled    bool   `json:"disabled"`
+	CreatedAt   string `json:"createdAt"`
 }
 
 // CatalogModelList 是模型目录分页列表。

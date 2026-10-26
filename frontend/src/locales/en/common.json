@@ -205,7 +205,7 @@
     "createTitle": "Create model",
     "editTitle": "Edit model",
     "nameHint": "Public model identifier used by clients (e.g. deepseek-flash).",
-    "typeHint": "Supported public API endpoints are determined by model type in code.",
+    "typeHint": "Capability category; protocols for each type are defined in code.",
     "disabled": {
       "yes": "Disabled",
       "no": "Active"

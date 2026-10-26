@@ -37,11 +37,6 @@ type Model struct {
 	CreatedAt   time.Time
 }
 
-// SupportedProtocols 返回该模型对外支持的协议全集（由类型推导）。
-func (m Model) SupportedProtocols() []domain.Protocol {
-	return m.Type.Protocols()
-}
-
 // CreateInput 是创建参数。
 type CreateInput struct {
 	Name        string
