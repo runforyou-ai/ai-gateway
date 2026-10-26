@@ -23,10 +23,12 @@ func TestFormatFrom(t *testing.T) {
 	cases := []struct {
 		from, name, want string
 	}{
-		{"hi@runforyou.app", "RunForYou", `"RunForYou" <hi@runforyou.app>`},
+		{"hi@runforyou.app", "RunForYou", "RunForYou <hi@runforyou.app>"},
+		{"hi@runforyou.app", "AI Gateway", "AI Gateway <hi@runforyou.app>"},
 		{"hi@runforyou.app", "", "hi@runforyou.app"},
-		{"AI Gateway <noreply@example.com>", "", `"AI Gateway" <noreply@example.com>`},
-		{"old <noreply@example.com>", "RunForYou", `"RunForYou" <noreply@example.com>`},
+		{"AI Gateway <noreply@example.com>", "", "AI Gateway <noreply@example.com>"},
+		{"old <noreply@example.com>", "RunForYou", "RunForYou <noreply@example.com>"},
+		{"a@b.com", `Acme "X"`, `"Acme \"X\"" <a@b.com>`},
 	}
 	for _, tc := range cases {
 		got := formatFrom(tc.from, tc.name)

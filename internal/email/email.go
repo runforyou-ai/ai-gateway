@@ -45,6 +45,7 @@ func New(opts Options) Sender {
 }
 
 // formatFrom 组合地址与显示名。from_name 优先；否则保留 from 里已写的「名称 <邮箱>」。
+// 简单显示名输出为 Name <addr>（与 Resend 文档一致）；net/mail 默认会加引号，Resend 常弄丢显示名。
 func formatFrom(from, fromName string) string {
 	from = strings.TrimSpace(from)
 	fromName = strings.TrimSpace(fromName)
@@ -55,13 +56,29 @@ func formatFrom(from, fromName string) string {
 	if err != nil {
 		return from
 	}
+	name := strings.TrimSpace(addr.Name)
 	if fromName != "" {
-		addr.Name = fromName
+		name = fromName
 	}
-	if strings.TrimSpace(addr.Name) == "" {
+	if name == "" {
 		return addr.Address
 	}
-	return addr.String()
+	if displayNameNeedsQuotes(name) {
+		return (&mail.Address{Name: name, Address: addr.Address}).String()
+	}
+	return name + " <" + addr.Address + ">"
+}
+
+func displayNameNeedsQuotes(name string) bool {
+	for _, r := range name {
+		switch {
+		case r >= 'a' && r <= 'z', r >= 'A' && r <= 'Z', r >= '0' && r <= '9':
+		case r == ' ' || r == '-' || r == '_' || r == '.':
+		default:
+			return true
+		}
+	}
+	return false
 }
 
 type notConfigured struct{}
