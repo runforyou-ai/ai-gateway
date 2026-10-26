@@ -4,11 +4,15 @@ package email
 import (
 	"context"
 	"errors"
+	"net/mail"
 	"strings"
 )
 
 // ErrNotConfigured 表示未配置发信（缺 from 或 Resend API Key）。
 var ErrNotConfigured = errors.New("email not configured")
+
+// defaultFromName 在配置仅给邮箱地址时补上的显示名，避免收件箱只显示本地部分（如 hi）。
+const defaultFromName = "AI Gateway"
 
 // Message 是一封待发邮件。
 type Message struct {
@@ -39,7 +43,23 @@ func New(opts Options) Sender {
 	if !opts.Configured() {
 		return notConfigured{}
 	}
-	return newResend(strings.TrimSpace(opts.ResendAPIKey), strings.TrimSpace(opts.From))
+	return newResend(strings.TrimSpace(opts.ResendAPIKey), normalizeFrom(opts.From))
+}
+
+// normalizeFrom 保证 From 带有显示名。裸地址会补 defaultFromName；已写「名称 <邮箱>」则保留名称。
+func normalizeFrom(from string) string {
+	from = strings.TrimSpace(from)
+	if from == "" {
+		return ""
+	}
+	addr, err := mail.ParseAddress(from)
+	if err != nil {
+		return from
+	}
+	if strings.TrimSpace(addr.Name) == "" {
+		addr.Name = defaultFromName
+	}
+	return addr.String()
 }
 
 type notConfigured struct{}

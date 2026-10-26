@@ -19,6 +19,23 @@ func TestNewNotConfigured(t *testing.T) {
 	}
 }
 
+func TestNormalizeFrom(t *testing.T) {
+	cases := []struct {
+		in, want string
+	}{
+		{"hi@runforyou.app", `"AI Gateway" <hi@runforyou.app>`},
+		{"  hi@runforyou.app  ", `"AI Gateway" <hi@runforyou.app>`},
+		{"RunForYou <hi@runforyou.app>", `"RunForYou" <hi@runforyou.app>`},
+		{"AI Gateway <noreply@example.com>", `"AI Gateway" <noreply@example.com>`},
+	}
+	for _, tc := range cases {
+		got := normalizeFrom(tc.in)
+		if got != tc.want {
+			t.Fatalf("normalizeFrom(%q) = %q, want %q", tc.in, got, tc.want)
+		}
+	}
+}
+
 func TestResendSend(t *testing.T) {
 	var gotAuth, gotUA, gotCT string
 	var got resendRequest
