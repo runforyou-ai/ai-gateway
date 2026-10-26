@@ -122,3 +122,28 @@ func TestResendSendValidation(t *testing.T) {
 		}
 	}
 }
+
+func TestNewPassesFormattedFrom(t *testing.T) {
+	var got resendRequest
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, _ := io.ReadAll(r.Body)
+		_ = json.Unmarshal(body, &got)
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{"id":"msg_1"}`))
+	}))
+	defer srv.Close()
+
+	s := New(Options{From: "hi@runforyou.app", FromName: "AI Gateway", ResendAPIKey: "re_test"})
+	c, ok := s.(*resendClient)
+	if !ok {
+		t.Fatalf("type %T", s)
+	}
+	c.url = srv.URL
+	c.http = srv.Client()
+	if err := c.Send(context.Background(), Message{To: "a@b.com", Subject: "x", Text: "y"}); err != nil {
+		t.Fatal(err)
+	}
+	if got.From != "AI Gateway <hi@runforyou.app>" {
+		t.Fatalf("from = %q", got.From)
+	}
+}
