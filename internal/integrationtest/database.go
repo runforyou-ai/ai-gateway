@@ -90,7 +90,7 @@ func Reset(t *testing.T, db *bun.DB) {
 	t.Helper()
 	ctx := context.Background()
 	_, err := db.ExecContext(ctx, `
-		TRUNCATE TABLE user_invites, password_reset_tokens, sessions, users, settings, state RESTART IDENTITY CASCADE`)
+		TRUNCATE TABLE virtual_keys, user_invites, password_reset_tokens, sessions, users, settings, state RESTART IDENTITY CASCADE`)
 	if err != nil {
 		t.Fatalf("reset tables: %v", err)
 	}

@@ -6,12 +6,20 @@ import type {
   UserCreateInput,
   UserList,
   UserUpdateInput,
+  VirtualKey,
+  VirtualKeyCreateInput,
+  VirtualKeyList,
+  VirtualKeyUpdateInput,
 } from "@/api/generated/contract"
 import {
   createUser,
+  createVirtualKey,
   deleteUser,
+  deleteVirtualKey,
   getUser,
+  getVirtualKey,
   updateUser,
+  updateVirtualKey,
 } from "@/api/generated/operations"
 import { me, updateProfile, type UpdateProfileInput } from "@/api/session"
 import { API_URL } from "./constants"
@@ -56,6 +64,21 @@ export const dataProvider = {
         return Promise.reject(toHttpError(error))
       }
     }
+    if (params.resource === "virtual-keys") {
+      try {
+        const currentPage = params.pagination?.currentPage ?? 1
+        const pageSize = params.pagination?.pageSize ?? 10
+        const start = (currentPage - 1) * pageSize
+        const end = start + pageSize
+        const list = await call<VirtualKeyList>({
+          method: "GET",
+          path: `/api/virtual-keys?_start=${start}&_end=${end}`,
+        })
+        return { data: list.items, total: list.total }
+      } catch (error) {
+        return Promise.reject(toHttpError(error))
+      }
+    }
     return restProvider.getList!(params)
   },
   getOne: async (params) => {
@@ -73,6 +96,13 @@ export const dataProvider = {
         return Promise.reject(toHttpError(error))
       }
     }
+    if (params.resource === "virtual-keys") {
+      try {
+        return { data: await getVirtualKey({ id: Number(params.id) }) }
+      } catch (error) {
+        return Promise.reject(toHttpError(error))
+      }
+    }
     return restProvider.getOne!(params)
   },
   create: async (params) => {
@@ -80,6 +110,20 @@ export const dataProvider = {
       try {
         const input = params.variables as UserCreateInput
         const data = await createUser(input)
+        return { data }
+      } catch (error) {
+        return Promise.reject(toHttpError(error))
+      }
+    }
+    if (params.resource === "virtual-keys") {
+      try {
+        const input = params.variables as VirtualKeyCreateInput
+        const data = await createVirtualKey({
+          name: input.name,
+          maxBudget: input.maxBudget ?? "",
+          expiresIn: input.expiresIn ?? "",
+          budgetReset: input.budgetReset ?? "",
+        })
         return { data }
       } catch (error) {
         return Promise.reject(toHttpError(error))
@@ -119,6 +163,22 @@ export const dataProvider = {
         return Promise.reject(toHttpError(error))
       }
     }
+    if (params.resource === "virtual-keys") {
+      try {
+        const input = params.variables as Omit<VirtualKeyUpdateInput, "id">
+        const data = await updateVirtualKey({
+          id: Number(params.id),
+          name: input.name,
+          disabled: Boolean(input.disabled),
+          maxBudget: input.maxBudget ?? "",
+          expiresIn: input.expiresIn ?? "",
+          budgetReset: input.budgetReset ?? "",
+        })
+        return { data }
+      } catch (error) {
+        return Promise.reject(toHttpError(error))
+      }
+    }
     return restProvider.update!(params)
   },
   deleteOne: async (params) => {
@@ -126,6 +186,14 @@ export const dataProvider = {
       try {
         await deleteUser({ id: Number(params.id) })
         return { data: { id: Number(params.id) } as User }
+      } catch (error) {
+        return Promise.reject(toHttpError(error))
+      }
+    }
+    if (params.resource === "virtual-keys") {
+      try {
+        await deleteVirtualKey({ id: Number(params.id) })
+        return { data: { id: Number(params.id) } as VirtualKey }
       } catch (error) {
         return Promise.reject(toHttpError(error))
       }

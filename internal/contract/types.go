@@ -92,3 +92,63 @@ type SiteSettings struct {
 	Name             string `json:"name"`
 	RegistrationOpen bool   `json:"registrationOpen"`
 }
+
+// VirtualKey 是管理台虚拟密钥视图（不含明文）。
+type VirtualKey struct {
+	ID          int64  `json:"id"`
+	Name        string `json:"name"`
+	Prefix      string `json:"prefix"`
+	Disabled    bool   `json:"disabled"`
+	MaxBudget   string `json:"maxBudget"`
+	Spent       string `json:"spent"`
+	BudgetReset string `json:"budgetReset"`
+	ExpiresIn   string `json:"expiresIn"`
+	ExpiresAt   string `json:"expiresAt"`
+	LastUsedAt  string `json:"lastUsedAt"`
+	CreatedAt   string `json:"createdAt"`
+}
+
+// VirtualKeyList 是虚拟密钥分页列表。
+type VirtualKeyList struct {
+	Items []VirtualKey `json:"items"`
+	Total int64        `json:"total"`
+}
+
+// VirtualKeyIDInput 按 id 定位虚拟密钥。
+type VirtualKeyIDInput struct {
+	ID int64 `json:"id"`
+}
+
+// VirtualKeyCreateInput 是创建虚拟密钥参数；限制类字段空表示不限。
+type VirtualKeyCreateInput struct {
+	Name        string `json:"name"`
+	MaxBudget   string `json:"maxBudget"`
+	ExpiresIn   string `json:"expiresIn"`
+	BudgetReset string `json:"budgetReset"`
+}
+
+// VirtualKeyCreated 是创建响应，含一次性明文。
+type VirtualKeyCreated struct {
+	ID          int64  `json:"id"`
+	Name        string `json:"name"`
+	Prefix      string `json:"prefix"`
+	Disabled    bool   `json:"disabled"`
+	MaxBudget   string `json:"maxBudget"`
+	Spent       string `json:"spent"`
+	BudgetReset string `json:"budgetReset"`
+	ExpiresIn   string `json:"expiresIn"`
+	ExpiresAt   string `json:"expiresAt"`
+	LastUsedAt  string `json:"lastUsedAt"`
+	CreatedAt   string `json:"createdAt"`
+	Secret      string `json:"secret"`
+}
+
+// VirtualKeyUpdateInput 是更新虚拟密钥参数；限制类字段空表示清除限制。
+type VirtualKeyUpdateInput struct {
+	ID          int64  `json:"id"`
+	Name        string `json:"name"`
+	Disabled    bool   `json:"disabled"`
+	MaxBudget   string `json:"maxBudget"`
+	ExpiresIn   string `json:"expiresIn"`
+	BudgetReset string `json:"budgetReset"`
+}

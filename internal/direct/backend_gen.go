@@ -127,3 +127,47 @@ func (b *Backend) UpdateSiteSettings(ctx context.Context, meta contract.RequestM
 	}
 	return b.Impl.UpdateSiteSettings(ctx, meta, input)
 }
+
+// ListVirtualKeys 分页列出当前用户的虚拟密钥（查询参数 _start、_end）。
+func (b *Backend) ListVirtualKeys(ctx context.Context, meta contract.RequestMeta) (contract.VirtualKeyList, error) {
+	if err := authorize(ctx, &meta, "user"); err != nil {
+		var zero contract.VirtualKeyList
+		return zero, err
+	}
+	return b.Impl.ListVirtualKeys(ctx, meta)
+}
+
+// GetVirtualKey 获取当前用户的单个虚拟密钥。
+func (b *Backend) GetVirtualKey(ctx context.Context, meta contract.RequestMeta, input contract.VirtualKeyIDInput) (contract.VirtualKey, error) {
+	if err := authorize(ctx, &meta, "user"); err != nil {
+		var zero contract.VirtualKey
+		return zero, err
+	}
+	return b.Impl.GetVirtualKey(ctx, meta, input)
+}
+
+// CreateVirtualKey 创建虚拟密钥；响应含一次性明文 secret。
+func (b *Backend) CreateVirtualKey(ctx context.Context, meta contract.RequestMeta, input contract.VirtualKeyCreateInput) (contract.VirtualKeyCreated, error) {
+	if err := authorize(ctx, &meta, "user"); err != nil {
+		var zero contract.VirtualKeyCreated
+		return zero, err
+	}
+	return b.Impl.CreateVirtualKey(ctx, meta, input)
+}
+
+// UpdateVirtualKey 更新名称、禁用状态、预算、重置周期或过期时长。
+func (b *Backend) UpdateVirtualKey(ctx context.Context, meta contract.RequestMeta, input contract.VirtualKeyUpdateInput) (contract.VirtualKey, error) {
+	if err := authorize(ctx, &meta, "user"); err != nil {
+		var zero contract.VirtualKey
+		return zero, err
+	}
+	return b.Impl.UpdateVirtualKey(ctx, meta, input)
+}
+
+// DeleteVirtualKey 删除虚拟密钥。
+func (b *Backend) DeleteVirtualKey(ctx context.Context, meta contract.RequestMeta, input contract.VirtualKeyIDInput) error {
+	if err := authorize(ctx, &meta, "user"); err != nil {
+		return err
+	}
+	return b.Impl.DeleteVirtualKey(ctx, meta, input)
+}

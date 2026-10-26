@@ -48,6 +48,7 @@ import { SignUpPage } from "./pages/sign-up";
 import { UserCreatePage } from "./pages/users/create";
 import { UserEditPage } from "./pages/users/edit";
 import { UserListPage } from "./pages/users/list";
+import { VirtualKeyListPage } from "./pages/virtual-keys/list";
 import { WelcomePage } from "./pages/welcome";
 import "./i18n";
 import "./App.css";
@@ -112,10 +113,10 @@ function App() {
                   },
                 },
                 {
-                  name: "api-keys",
-                  list: `${CONSOLE_PREFIX}/api-keys`,
+                  name: "virtual-keys",
+                  list: `${CONSOLE_PREFIX}/virtual-keys`,
                   meta: {
-                    label: t("resources.api-keys"),
+                    label: t("resources.virtual-keys"),
                     icon: <KeyRound className="h-4 w-4" />,
                   },
                 },
@@ -184,7 +185,7 @@ function App() {
                   </Route>
                   <Route path="models" element={<PlaceholderListPage />} />
                   <Route path="providers" element={<PlaceholderListPage />} />
-                  <Route path="api-keys" element={<PlaceholderListPage />} />
+                  <Route path="virtual-keys" element={<VirtualKeyListPage />} />
                   <Route
                     path="settings"
                     element={

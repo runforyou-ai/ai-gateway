@@ -68,3 +68,28 @@ export function updateSiteSettings(input: contract.SiteSettings, signal?: AbortS
   return call<contract.SiteSettings>({ method: "PUT", path: "/api/settings/site", body: input }, signal)
 }
 
+/** 分页列出当前用户的虚拟密钥（查询参数 _start、_end）。 */
+export function listVirtualKeys(signal?: AbortSignal) {
+  return call<contract.VirtualKeyList>({ method: "GET", path: "/api/virtual-keys" }, signal)
+}
+
+/** 获取当前用户的单个虚拟密钥。 */
+export function getVirtualKey(input: contract.VirtualKeyIDInput, signal?: AbortSignal) {
+  return call<contract.VirtualKey>({ method: "GET", path: `/api/virtual-keys/${input.id}` }, signal)
+}
+
+/** 创建虚拟密钥；响应含一次性明文 secret。 */
+export function createVirtualKey(input: contract.VirtualKeyCreateInput, signal?: AbortSignal) {
+  return call<contract.VirtualKeyCreated>({ method: "POST", path: "/api/virtual-keys", body: input }, signal)
+}
+
+/** 更新名称、禁用状态、预算、重置周期或过期时长。 */
+export function updateVirtualKey(input: contract.VirtualKeyUpdateInput, signal?: AbortSignal) {
+  return call<contract.VirtualKey>({ method: "PATCH", path: `/api/virtual-keys/${input.id}`, body: input }, signal)
+}
+
+/** 删除虚拟密钥。 */
+export function deleteVirtualKey(input: contract.VirtualKeyIDInput, signal?: AbortSignal) {
+  return call<void>({ method: "DELETE", path: `/api/virtual-keys/${input.id}` }, signal)
+}
+

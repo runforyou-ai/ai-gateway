@@ -35,7 +35,7 @@ internal/integrationtest/
 
 ## 认证
 
-- 管理台 Cookie 会话；`/v1` 用 API Key，二者分离。
+- 管理台 Cookie 会话；`/v1` 用 Virtual Key，二者分离。
 - 联调管理员：用户名 `Admin`，邮箱 `admin@example.com`，密码 `12345678`。
 
 ## `/api` 响应

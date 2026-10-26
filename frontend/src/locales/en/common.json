@@ -198,8 +198,64 @@
     "users": "Users",
     "models": "Models",
     "providers": "Providers",
-    "api-keys": "API Keys",
+    "virtual-keys": "Virtual Keys",
     "settings": "Settings"
+  },
+  "virtualKeys": {
+    "createTitle": "Create virtual key",
+    "editTitle": "Edit virtual key",
+    "secretTitle": "Virtual key created",
+    "secretHint": "Copy and store this key now. You will not be able to see it again.",
+    "copy": "Copy",
+    "copied": "Copied",
+    "done": "Done",
+    "unlimited": "Unlimited",
+    "never": "Never",
+    "budgetCustom": "Custom",
+    "budgetAmount": "${{amount}}",
+    "expiresIn": {
+      "1h": "1 hour",
+      "1d": "1 day",
+      "3d": "3 days",
+      "7d": "7 days",
+      "30d": "30 days",
+      "90d": "90 days",
+      "180d": "180 days",
+      "365d": "1 year",
+      "unlimited": "Unlimited"
+    },
+    "budgetReset": {
+      "na": "N/A",
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly"
+    },
+    "disabled": {
+      "yes": "Disabled",
+      "no": "Active"
+    },
+    "fields": {
+      "name": "Name",
+      "prefix": "Prefix",
+      "maxBudget": "Limit",
+      "customBudget": "Custom amount (USD)",
+      "spent": "Spent",
+      "budgetReset": "Reset limit every",
+      "expiresIn": "Expiration",
+      "expiresAt": "Expires",
+      "lastUsedAt": "Last used",
+      "disabled": "Disable",
+      "createdAt": "Created",
+      "actions": "Actions"
+    },
+    "fieldErrors": {
+      "name": {
+        "invalid": "Invalid name"
+      },
+      "maxBudget": {
+        "invalid": "Must be a positive number"
+      }
+    }
   },
   "users": {
     "createTitle": "Create user",
